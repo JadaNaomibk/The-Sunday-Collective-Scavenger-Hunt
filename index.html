@@ -10,14 +10,13 @@
       margin: 0;
       display: flex;
       height: 100vh;
+      flex-direction: column;
     }
 
     #photo-section {
-      width: 30%;
+      flex: 1;
       padding: 20px;
-      box-sizing: border-box;
       background-color: #f9f9f9;
-      border-right: 1px solid #ccc;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -31,6 +30,7 @@
 
     #photo-section video {
       width: 100%;
+      max-width: 400px;
       border: 1px solid #ccc;
       border-radius: 8px;
       margin-bottom: 10px;
@@ -40,6 +40,7 @@
       margin-bottom: 20px;
       padding: 10px;
       width: 80%;
+      max-width: 300px;
       border: 1px solid #ccc;
       border-radius: 5px;
       font-size: 14px;
@@ -84,7 +85,8 @@
     }
 
     #map-section {
-      width: 70%;
+      width: 100%;
+      height: 50vh;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -92,10 +94,57 @@
     }
 
     #map-section img {
-      max-width: 100%;
-      max-height: 100%;
+      width: 100%;
+      height: auto;
+      max-width: 600px;
       border: 1px solid #ccc;
       border-radius: 8px;
+    }
+
+    @media (max-width: 768px) {
+      #photo-section {
+        padding: 10px;
+      }
+
+      #photo-section video {
+        max-width: 100%;
+      }
+
+      #photo-section input {
+        width: 100%;
+        max-width: 90%;
+      }
+
+      #photo-section .photo-gallery {
+        grid-template-columns: repeat(3, 1fr); /* 3 photos per row */
+      }
+
+      #photo-section button {
+        width: 100%;
+        padding: 12px;
+      }
+
+      #map-section {
+        height: 40vh;
+      }
+    }
+
+    @media (max-width: 480px) {
+      #photo-section h1 {
+        font-size: 20px;
+      }
+
+      #photo-section input {
+        font-size: 14px;
+      }
+
+      #photo-section button {
+        padding: 8px;
+      }
+
+      #map-section {
+        height: 35vh;
+      }
     }
   </style>
 </head>
@@ -122,64 +171,7 @@
     <img src="Heart.png" alt="Scavenger Hunt Map" onerror="console.error('Map image failed to load. Check the file path.')">
   </div>
 
-  <script>
-    // Get video element and button references
-    const cameraElement = document.getElementById('camera');
-    const captureButton = document.getElementById('capture');
-    const uploadButton = document.getElementById('upload');
-    const playerNameInput = document.getElementById('playerName');
-    const thankYouMessage = document.getElementById('thank-you-message');
-    const photoGallery = document.getElementById('photoGallery');
-
-    // Access the user's camera
-    function startCamera() {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(function(stream) {
-          cameraElement.srcObject = stream;
-        })
-        .catch(function(error) {
-          console.error('Error accessing the camera: ', error);
-          alert('Failed to access the camera. Please ensure permissions are granted.');
-        });
-    }
-
-    // Start camera on page load
-    window.onload = startCamera;
-
-    // Capture functionality
-    captureButton.addEventListener('click', () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = cameraElement.videoWidth;
-      canvas.height = cameraElement.videoHeight;
-      const context = canvas.getContext('2d');
-      context.drawImage(cameraElement, 0, 0, canvas.width, canvas.height);
-
-      // Convert the captured image to an image element
-      const img = document.createElement('img');
-      img.src = canvas.toDataURL('image/png');
-      photoGallery.appendChild(img);
-
-      // Save the image to localStorage
-      let photos = JSON.parse(localStorage.getItem('photos')) || [];
-      photos.push(img.src); // Save image URL
-      localStorage.setItem('photos', JSON.stringify(photos)); // Save to localStorage
-    });
-
-    // Upload button functionality
-    uploadButton.addEventListener('click', () => {
-      if (!playerNameInput.value.trim()) {
-        alert('Please enter your name before uploading photos.');
-        return;
-      }
-
-      // Simulate an upload and show the thank-you message
-      thankYouMessage.style.display = 'block';
-
-      // Optionally clear the gallery after upload
-      setTimeout(() => {
-        thankYouMessage.style.display = 'none';
-      }, 5000); // Hide the message after 5 seconds
-    });
-  </script>
+  <!-- Link to the external script.js file -->
+  <script src="js/script.js"></script>
 </body>
 </html>

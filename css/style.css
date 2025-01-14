@@ -1,0 +1,115 @@
+/* fonts.css */
+
+/* Import RainbowSans */
+@font-face {
+    font-family: 'Rainbowsans';
+    src: url('../assets/RainbowSans-9Y00K.otf') format('opentype');
+    font-weight: normal;
+}
+
+/* Import RainbowSans Bold */
+@font-face {
+    font-family: 'RainbowsansBold';
+    src: url('../assets/RainbowSansBold-lgEEd.otf') format('opentype');
+    font-weight: bold;
+}
+
+/* Import RainbowSans Color */
+@font-face {
+    font-family: 'RainbowsansColor';
+    src: url('../assets/RainbowSansColor-nREEg.otf') format('opentype');
+    font-weight: normal;
+}
+
+/* Apply RainbowsansColor as the default font */
+body {
+    font-family: 'RainbowsansColor', Arial, sans-serif;
+    font-size: 16px; /* Default font size for readability */
+    line-height: 1.5; /* Improved readability */
+    margin: 0;
+    padding: 0;
+}
+
+/* Apply the same font to common elements */
+h1, h2, h3, p, div, button, input, textarea {
+    font-family: 'RainbowsansColor', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Make sure the body layout is flexible */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto; /* Centers the content */
+}
+
+/* Adjust heading sizes for different screen sizes */
+h1 {
+    font-size: 2em;
+    margin-bottom: 0.5em;
+}
+
+h2 {
+    font-size: 1.75em;
+    margin-bottom: 0.5em;
+}
+
+h3 {
+    font-size: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+/* Add padding and adjust button styles */
+button {
+    padding: 0.8em 1.5em;
+    font-size: 1em;
+    border: none;
+    background-color: #333;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #444;
+}
+
+/* Mobile responsiveness with media queries */
+@media only screen and (max-width: 600px) {
+    body {
+        font-size: 14px; /* Smaller font size for mobile */
+    }
+
+    h1 {
+        font-size: 1.75em;
+    }
+
+    h2 {
+        font-size: 1.5em;
+    }
+
+    h3 {
+        font-size: 1.25em;
+    }
+
+    button {
+        padding: 0.6em 1em; /* Smaller buttons on mobile */
+        font-size: 0.9em;
+    }
+
+    /* Make images responsive */
+    img {
+        width: 100%;
+        height: auto;
+    }
+
+    /* Adjust layout for smaller screens */
+    .container {
+        padding: 10px;
+    }
+
+    .item {
+        flex: 1 1 100%; /* Items take up the full width on mobile */
+    }
+}
