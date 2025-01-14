@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Sunday Collective Scavenger Hunt</title>
+  <link rel="stylesheet" href="css/fonts.css">
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      height: 100vh;
+    }
+
+    #photo-section {
+      width: 30%;
+      padding: 20px;
+      box-sizing: border-box;
+      background-color: #f9f9f9;
+      border-right: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+    }
+
+    #photo-section h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    #photo-section video {
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    #photo-section input {
+      margin-bottom: 20px;
+      padding: 10px;
+      width: 80%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #photo-section button {
+      background-color: #d782f7;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    #photo-section button:hover {
+      background-color: #b662d0;
+    }
+
+    #photo-section .photo-gallery {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr); /* 5 photos per row */
+      gap: 10px; /* Space between photos */
+      justify-items: center; /* Center photos horizontally */
+    }
+
+    #photo-section .photo-gallery img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover; /* Ensure images maintain aspect ratio */
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    #thank-you-message {
+      display: none;
+      margin-top: 20px;
+      color: green;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    #map-section {
+      width: 70%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #eaeaea;
+    }
+
+    #map-section img {
+      max-width: 100%;
+      max-height: 100%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="photo-section">
+    <h1>Take a Photo</h1>
+    <!-- Input for player name -->
+    <input type="text" id="playerName" placeholder="Enter your name" />
+
+    <!-- Camera feed -->
+    <video id="camera" autoplay></video>
+    <button id="capture">Capture</button>
+    <button id="upload">Upload Photos</button>
+    
+    <!-- Photo gallery -->
+    <div class="photo-gallery" id="photoGallery"></div>
+    
+    <!-- Thank you message -->
+    <div id="thank-you-message">Thank you for playing! Your photos have been uploaded successfully.</div>
+  </div>
+
+  <div id="map-section">
+    <!-- Use the correct file path for the uploaded Map.png -->
+    <img src="Heart.png" alt="Scavenger Hunt Map" onerror="console.error('Map image failed to load. Check the file path.')">
+  </div>
+
+  <script>
+    // Get video element and button references
+    const cameraElement = document.getElementById('camera');
+    const captureButton = document.getElementById('capture');
+    const uploadButton = document.getElementById('upload');
+    const playerNameInput = document.getElementById('playerName');
+    const thankYouMessage = document.getElementById('thank-you-message');
+    const photoGallery = document.getElementById('photoGallery');
+
+    // Access the user's camera
+    function startCamera() {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+          cameraElement.srcObject = stream;
+        })
+        .catch(function(error) {
+          console.error('Error accessing the camera: ', error);
+          alert('Failed to access the camera. Please ensure permissions are granted.');
+        });
+    }
+
+    // Start camera on page load
+    window.onload = startCamera;
+
+    // Capture functionality
+    captureButton.addEventListener('click', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = cameraElement.videoWidth;
+      canvas.height = cameraElement.videoHeight;
+      const context = canvas.getContext('2d');
+      context.drawImage(cameraElement, 0, 0, canvas.width, canvas.height);
+
+      // Convert the captured image to an image element
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png');
+      photoGallery.appendChild(img);
+
+      // Save the image to localStorage
+      let photos = JSON.parse(localStorage.getItem('photos')) || [];
+      photos.push(img.src); // Save image URL
+      localStorage.setItem('photos', JSON.stringify(photos)); // Save to localStorage
+    });
+
+    // Upload button functionality
+    uploadButton.addEventListener('click', () => {
+      if (!playerNameInput.value.trim()) {
+        alert('Please enter your name before uploading photos.');
+        return;
+      }
+
+      // Simulate an upload and show the thank-you message
+      thankYouMessage.style.display = 'block';
+
+      // Optionally clear the gallery after upload
+      setTimeout(() => {
+        thankYouMessage.style.display = 'none';
+      }, 5000); // Hide the message after 5 seconds
+    });
+  </script>
+</body>
+</html>

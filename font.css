@@ -1,0 +1,19 @@
+@font-face {
+    font-family: 'RainbowSans';
+    src: url('../assets/fonts/RainbowSans-9Y00K.otf') format('opentype');
+  }
+  
+  @font-face {
+    font-family: 'RainbowSansBold';
+    src: url('../assets/fonts/RainbowSansBold-lgEEd.otf') format('opentype');
+  }
+  
+  @font-face {
+    font-family: 'RainbowSansColor';
+    src: url('../assets/fonts/RainbowSansColor-nREEg.otf') format('opentype');
+  }
+  
+  body {
+    font-family: 'RainbowSansColor', Arial, sans-serif;
+  }
+  
