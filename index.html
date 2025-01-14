@@ -19,7 +19,7 @@
       display: flex;
       flex-direction: column;
       min-height: 100vh;
-      background-color: #f5f5f5;
+      background-color: #FFEB3B; /* Bright Yellow Background */
     }
 
     /* Header */
@@ -58,10 +58,10 @@
     }
 
     #photo-section button {
-      background-color: #d782f7;
-      color: #fff;
+      background-color: #fff;
+      color: #000;
       padding: 12px 24px;
-      border: none;
+      border: 1px solid #000;
       border-radius: 6px;
       font-size: 16px;
       cursor: pointer;
@@ -71,7 +71,7 @@
     }
 
     #photo-section button:hover {
-      background-color: #b662d0;
+      background-color: #f5f5f5;
     }
 
     .photo-gallery {
@@ -89,14 +89,6 @@
       border-radius: 8px;
       max-width: 80px;
       max-height: 80px;
-    }
-
-    #thank-you-message {
-      display: none;
-      margin-top: 20px;
-      color: #4caf50;
-      font-size: 14px;
-      text-align: center;
     }
 
     /* Map Section */
@@ -193,39 +185,55 @@
 </head>
 <body>
   <div id="photo-section">
-    <h1>Take a Photo</h1>
+    <h1>Take a Photo or Video</h1>
     <input type="text" id="playerName" placeholder="Enter your name" />
 
+    <!-- Video Feed -->
     <video id="camera" autoplay></video>
-    <button id="capture">Capture</button>
-    <button id="upload">Upload Photos</button>
 
+    <!-- Buttons for Capture and Video Recording -->
+    <button id="capture">Capture Photo</button>
+    <button id="record">Start Recording Video</button>
+    <button id="stop-recording" style="display:none;">Stop Recording</button>
+    <button id="upload">Upload Photos and Videos</button>
+
+    <!-- Photo Gallery -->
     <div class="photo-gallery" id="photoGallery"></div>
 
-    <div id="thank-you-message">Thank you for playing! Your photos have been uploaded successfully.</div>
+    <!-- Thank You Message -->
+    <div id="thank-you-message">Thank you for playing! Your photos and videos have been uploaded successfully.</div>
   </div>
 
+  <!-- Instructions Section -->
   <div id="instructions-section">
     <img src="instructions-placeholder.png" alt="Instructions Image" onerror="console.error('Instructions image failed to load. Check the file path.')">
   </div>
 
+  <!-- Map Section -->
   <div id="map-section">
     <img src="Heart.png" alt="Scavenger Hunt Map" onerror="console.error('Map image failed to load. Check the file path.')">
   </div>
 
   <script>
-    // Access camera and ask for permission
+    // Get references to elements
     const cameraElement = document.getElementById('camera');
     const captureButton = document.getElementById('capture');
+    const recordButton = document.getElementById('record');
+    const stopRecordingButton = document.getElementById('stop-recording');
     const uploadButton = document.getElementById('upload');
     const playerNameInput = document.getElementById('playerName');
     const thankYouMessage = document.getElementById('thank-you-message');
     const photoGallery = document.getElementById('photoGallery');
 
-    // Access the user's camera
+    let mediaStream = null;
+    let mediaRecorder = null;
+    let recordedBlobs = [];
+
+    // Request camera permissions and access
     function startCamera() {
       navigator.mediaDevices.getUserMedia({ video: true })
         .then(function(stream) {
+          mediaStream = stream;
           cameraElement.srcObject = stream;
         })
         .catch(function(error) {
@@ -234,10 +242,24 @@
         });
     }
 
-    // Start camera on page load
-    window.onload = startCamera;
+    // Switch to front/back camera if available
+    function switchCamera() {
+      const videoTracks = mediaStream.getVideoTracks();
+      const currentTrack = videoTracks[0];
+      const constraints = {
+        video: {
+          facingMode: currentTrack.label === 'back' ? 'user' : 'environment'
+        }
+      };
+      
+      mediaStream.getTracks().forEach(track => track.stop()); // Stop current stream
+      navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+        cameraElement.srcObject = stream;
+        mediaStream = stream;
+      });
+    }
 
-    // Capture functionality
+    // Capture photo
     captureButton.addEventListener('click', () => {
       const canvas = document.createElement('canvas');
       canvas.width = cameraElement.videoWidth;
@@ -256,6 +278,39 @@
       localStorage.setItem('photos', JSON.stringify(photos)); // Save to localStorage
     });
 
+    // Start recording video
+    recordButton.addEventListener('click', () => {
+      recordedBlobs = [];
+      mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm' });
+      
+      mediaRecorder.ondataavailable = (event) => {
+        recordedBlobs.push(event.data);
+      };
+
+      mediaRecorder.start();
+      recordButton.style.display = 'none';
+      stopRecordingButton.style.display = 'block';
+    });
+
+    // Stop recording video
+    stopRecordingButton.addEventListener('click', () => {
+      mediaRecorder.stop();
+      stopRecordingButton.style.display = 'none';
+      recordButton.style.display = 'block';
+
+      const videoBlob = new Blob(recordedBlobs, { type: 'video/webm' });
+      const videoUrl = URL.createObjectURL(videoBlob);
+      const videoElement = document.createElement('video');
+      videoElement.src = videoUrl;
+      videoElement.controls = true;
+      photoGallery.appendChild(videoElement);
+
+      // Save video URL to localStorage
+      let videos = JSON.parse(localStorage.getItem('videos')) || [];
+      videos.push(videoUrl); // Save video URL
+      localStorage.setItem('videos', JSON.stringify(videos)); // Save to localStorage
+    });
+
     // Upload button functionality
     uploadButton.addEventListener('click', () => {
       if (!playerNameInput.value.trim()) {
@@ -271,6 +326,10 @@
         thankYouMessage.style.display = 'none';
       }, 5000); // Hide the message after 5 seconds
     });
+
+    // Start the camera when the page loads
+    window.onload = startCamera;
+
   </script>
 </body>
 </html>
