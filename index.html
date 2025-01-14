@@ -19,7 +19,7 @@
       display: flex;
       flex-direction: column;
       min-height: 100vh;
-      background-color: #FFEB3B; /* Bright Yellow Background */
+      background-color: #fff; /* White Background */
     }
 
     /* Header */
@@ -192,6 +192,7 @@
     <video id="camera" autoplay></video>
 
     <!-- Buttons for Capture and Video Recording -->
+    <button id="switch-camera">Switch Camera</button>
     <button id="capture">Capture Photo</button>
     <button id="record">Start Recording Video</button>
     <button id="stop-recording" style="display:none;">Stop Recording</button>
@@ -201,7 +202,7 @@
     <div class="photo-gallery" id="photoGallery"></div>
 
     <!-- Thank You Message -->
-    <div id="thank-you-message">Thank you for playing! Your photos and videos have been uploaded successfully.</div>
+    <div id="thank-you-message" style="display:none;">Thank you for playing! Your photos and videos have been uploaded successfully.</div>
   </div>
 
   <!-- Instructions Section -->
@@ -221,6 +222,7 @@
     const recordButton = document.getElementById('record');
     const stopRecordingButton = document.getElementById('stop-recording');
     const uploadButton = document.getElementById('upload');
+    const switchCameraButton = document.getElementById('switch-camera');
     const playerNameInput = document.getElementById('playerName');
     const thankYouMessage = document.getElementById('thank-you-message');
     const photoGallery = document.getElementById('photoGallery');
@@ -228,108 +230,9 @@
     let mediaStream = null;
     let mediaRecorder = null;
     let recordedBlobs = [];
+    let currentStream = null;
 
-    // Request camera permissions and access
-    function startCamera() {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(function(stream) {
-          mediaStream = stream;
-          cameraElement.srcObject = stream;
-        })
-        .catch(function(error) {
-          console.error('Error accessing the camera: ', error);
-          alert('Failed to access the camera. Please ensure permissions are granted.');
-        });
-    }
-
-    // Switch to front/back camera if available
-    function switchCamera() {
-      const videoTracks = mediaStream.getVideoTracks();
-      const currentTrack = videoTracks[0];
-      const constraints = {
-        video: {
-          facingMode: currentTrack.label === 'back' ? 'user' : 'environment'
-        }
-      };
-      
-      mediaStream.getTracks().forEach(track => track.stop()); // Stop current stream
-      navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
-        cameraElement.srcObject = stream;
-        mediaStream = stream;
-      });
-    }
-
-    // Capture photo
-    captureButton.addEventListener('click', () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = cameraElement.videoWidth;
-      canvas.height = cameraElement.videoHeight;
-      const context = canvas.getContext('2d');
-      context.drawImage(cameraElement, 0, 0, canvas.width, canvas.height);
-
-      // Convert the captured image to an image element
-      const img = document.createElement('img');
-      img.src = canvas.toDataURL('image/png');
-      photoGallery.appendChild(img);
-
-      // Save the image to localStorage
-      let photos = JSON.parse(localStorage.getItem('photos')) || [];
-      photos.push(img.src); // Save image URL
-      localStorage.setItem('photos', JSON.stringify(photos)); // Save to localStorage
-    });
-
-    // Start recording video
-    recordButton.addEventListener('click', () => {
-      recordedBlobs = [];
-      mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm' });
-      
-      mediaRecorder.ondataavailable = (event) => {
-        recordedBlobs.push(event.data);
-      };
-
-      mediaRecorder.start();
-      recordButton.style.display = 'none';
-      stopRecordingButton.style.display = 'block';
-    });
-
-    // Stop recording video
-    stopRecordingButton.addEventListener('click', () => {
-      mediaRecorder.stop();
-      stopRecordingButton.style.display = 'none';
-      recordButton.style.display = 'block';
-
-      const videoBlob = new Blob(recordedBlobs, { type: 'video/webm' });
-      const videoUrl = URL.createObjectURL(videoBlob);
-      const videoElement = document.createElement('video');
-      videoElement.src = videoUrl;
-      videoElement.controls = true;
-      photoGallery.appendChild(videoElement);
-
-      // Save video URL to localStorage
-      let videos = JSON.parse(localStorage.getItem('videos')) || [];
-      videos.push(videoUrl); // Save video URL
-      localStorage.setItem('videos', JSON.stringify(videos)); // Save to localStorage
-    });
-
-    // Upload button functionality
-    uploadButton.addEventListener('click', () => {
-      if (!playerNameInput.value.trim()) {
-        alert('Please enter your name before uploading photos.');
-        return;
-      }
-
-      // Simulate an upload and show the thank-you message
-      thankYouMessage.style.display = 'block';
-
-      // Optionally clear the gallery after upload
-      setTimeout(() => {
-        thankYouMessage.style.display = 'none';
-      }, 5000); // Hide the message after 5 seconds
-    });
-
-    // Start the camera when the page loads
-    window.onload = startCamera;
-
-  </script>
-</body>
-</html>
+    // Function to start the camera
+    function
+::contentReference[oaicite:0]{index=0}
+ 
