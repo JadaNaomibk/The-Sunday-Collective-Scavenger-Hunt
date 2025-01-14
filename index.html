@@ -6,144 +6,187 @@
   <title>The Sunday Collective Scavenger Hunt</title>
   <link rel="stylesheet" href="css/fonts.css">
   <style>
-    body {
+    /* General Reset */
+    body, h1, p, button, input, textarea, div {
       margin: 0;
-      display: flex;
-      height: 100vh;
-      flex-direction: column;
+      padding: 0;
+      box-sizing: border-box;
     }
 
+    body {
+      font-family: 'RainbowsansColor', Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background-color: #f5f5f5;
+    }
+
+    /* Header */
     #photo-section {
       flex: 1;
-      padding: 20px;
-      background-color: #f9f9f9;
+      padding: 16px;
+      background-color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
       overflow-y: auto;
+      text-align: center;
     }
 
     #photo-section h1 {
-      font-size: 24px;
-      margin-bottom: 20px;
+      font-size: 22px;
+      margin-bottom: 16px;
+      color: #333;
     }
 
     #photo-section video {
       width: 100%;
-      max-width: 400px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      max-width: 80%;
+      border-radius: 10px;
+      margin-bottom: 12px;
     }
 
     #photo-section input {
-      margin-bottom: 20px;
-      padding: 10px;
-      width: 80%;
+      padding: 12px;
+      margin: 10px 0;
+      width: 90%;
       max-width: 300px;
+      font-size: 14px;
       border: 1px solid #ccc;
       border-radius: 5px;
-      font-size: 14px;
     }
 
     #photo-section button {
       background-color: #d782f7;
-      color: white;
+      color: #fff;
+      padding: 12px 24px;
       border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
+      border-radius: 6px;
+      font-size: 16px;
       cursor: pointer;
-      margin-bottom: 20px;
+      width: 80%;
+      max-width: 300px;
+      margin-bottom: 16px;
     }
 
     #photo-section button:hover {
       background-color: #b662d0;
     }
 
-    #photo-section .photo-gallery {
-      width: 100%;
+    .photo-gallery {
       display: grid;
-      grid-template-columns: repeat(5, 1fr); /* 5 photos per row */
-      gap: 10px; /* Space between photos */
-      justify-items: center; /* Center photos horizontally */
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      width: 100%;
+      padding: 10px 0;
     }
 
-    #photo-section .photo-gallery img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover; /* Ensure images maintain aspect ratio */
-      border: 1px solid #ccc;
+    .photo-gallery img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
       border-radius: 8px;
+      max-width: 80px;
+      max-height: 80px;
     }
 
     #thank-you-message {
       display: none;
       margin-top: 20px;
-      color: green;
-      font-size: 16px;
+      color: #4caf50;
+      font-size: 14px;
       text-align: center;
     }
 
+    /* Map Section */
     #map-section {
-      width: 100%;
-      height: 50vh;
       display: flex;
       justify-content: center;
       align-items: center;
       background-color: #eaeaea;
+      padding: 10px 0;
     }
 
     #map-section img {
       width: 100%;
       height: auto;
-      max-width: 600px;
-      border: 1px solid #ccc;
+      max-width: 80%;
+      border-radius: 10px;
+    }
+
+    /* Instructions Section */
+    #instructions-section {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #instructions-section img {
+      width: 100%;
+      height: auto;
+      max-width: 300px;
       border-radius: 8px;
     }
 
+    /* Mobile Media Queries */
     @media (max-width: 768px) {
       #photo-section {
-        padding: 10px;
-      }
-
-      #photo-section video {
-        max-width: 100%;
-      }
-
-      #photo-section input {
-        width: 100%;
-        max-width: 90%;
-      }
-
-      #photo-section .photo-gallery {
-        grid-template-columns: repeat(3, 1fr); /* 3 photos per row */
-      }
-
-      #photo-section button {
-        width: 100%;
         padding: 12px;
       }
 
-      #map-section {
-        height: 40vh;
-      }
-    }
-
-    @media (max-width: 480px) {
       #photo-section h1 {
-        font-size: 20px;
+        font-size: 18px;
       }
 
       #photo-section input {
-        font-size: 14px;
+        width: 90%;
       }
 
       #photo-section button {
-        padding: 8px;
+        padding: 12px;
+        width: 90%;
+        font-size: 14px;
+      }
+
+      .photo-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* Adjust number of images per row */
       }
 
       #map-section {
-        height: 35vh;
+        height: auto;
+      }
+
+      #instructions-section {
+        flex-direction: column;
+      }
+    }
+
+    /* Extra Small Screen (Phones) */
+    @media (max-width: 480px) {
+      #photo-section h1 {
+        font-size: 16px;
+      }
+
+      #photo-section input {
+        font-size: 12px;
+      }
+
+      #photo-section button {
+        padding: 10px;
+        font-size: 12px;
+      }
+
+      .photo-gallery img {
+        width: 70px;
+        height: 70px;
+      }
+
+      #map-section {
+        padding: 8px 0;
       }
     }
   </style>
@@ -151,27 +194,83 @@
 <body>
   <div id="photo-section">
     <h1>Take a Photo</h1>
-    <!-- Input for player name -->
     <input type="text" id="playerName" placeholder="Enter your name" />
 
-    <!-- Camera feed -->
     <video id="camera" autoplay></video>
     <button id="capture">Capture</button>
     <button id="upload">Upload Photos</button>
-    
-    <!-- Photo gallery -->
+
     <div class="photo-gallery" id="photoGallery"></div>
-    
-    <!-- Thank you message -->
+
     <div id="thank-you-message">Thank you for playing! Your photos have been uploaded successfully.</div>
   </div>
 
+  <div id="instructions-section">
+    <img src="instructions-placeholder.png" alt="Instructions Image" onerror="console.error('Instructions image failed to load. Check the file path.')">
+  </div>
+
   <div id="map-section">
-    <!-- Use the correct file path for the uploaded Map.png -->
     <img src="Heart.png" alt="Scavenger Hunt Map" onerror="console.error('Map image failed to load. Check the file path.')">
   </div>
 
-  <!-- Link to the external script.js file -->
-  <script src="js/script.js"></script>
+  <script>
+    // Access camera and ask for permission
+    const cameraElement = document.getElementById('camera');
+    const captureButton = document.getElementById('capture');
+    const uploadButton = document.getElementById('upload');
+    const playerNameInput = document.getElementById('playerName');
+    const thankYouMessage = document.getElementById('thank-you-message');
+    const photoGallery = document.getElementById('photoGallery');
+
+    // Access the user's camera
+    function startCamera() {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+          cameraElement.srcObject = stream;
+        })
+        .catch(function(error) {
+          console.error('Error accessing the camera: ', error);
+          alert('Failed to access the camera. Please ensure permissions are granted.');
+        });
+    }
+
+    // Start camera on page load
+    window.onload = startCamera;
+
+    // Capture functionality
+    captureButton.addEventListener('click', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = cameraElement.videoWidth;
+      canvas.height = cameraElement.videoHeight;
+      const context = canvas.getContext('2d');
+      context.drawImage(cameraElement, 0, 0, canvas.width, canvas.height);
+
+      // Convert the captured image to an image element
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png');
+      photoGallery.appendChild(img);
+
+      // Save the image to localStorage
+      let photos = JSON.parse(localStorage.getItem('photos')) || [];
+      photos.push(img.src); // Save image URL
+      localStorage.setItem('photos', JSON.stringify(photos)); // Save to localStorage
+    });
+
+    // Upload button functionality
+    uploadButton.addEventListener('click', () => {
+      if (!playerNameInput.value.trim()) {
+        alert('Please enter your name before uploading photos.');
+        return;
+      }
+
+      // Simulate an upload and show the thank-you message
+      thankYouMessage.style.display = 'block';
+
+      // Optionally clear the gallery after upload
+      setTimeout(() => {
+        thankYouMessage.style.display = 'none';
+      }, 5000); // Hide the message after 5 seconds
+    });
+  </script>
 </body>
 </html>
