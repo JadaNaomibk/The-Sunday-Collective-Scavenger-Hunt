@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - Uploaded Media</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -46,7 +46,8 @@
             margin-bottom: 10px;
         }
 
-        .media-card img, .media-card video {
+        .media-card img,
+        .media-card video {
             max-height: 150px;
             max-width: 150px;
         }
@@ -85,35 +86,51 @@
         #upload-container button:hover {
             background-color: #45a049;
         }
+
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .image-item {
+            margin: 10px;
+            width: 150px;
+        }
+
+        .image-item img {
+            width: 100%;
+            height: auto;
+        }
+
+        .image-item a {
+            display: block;
+            text-align: center;
+            margin-top: 5px;
+        }
     </style>
 </head>
 
 <body>
     <h1>Admin Dashboard - Uploaded Media</h1>
 
+    <!-- Upload Form -->
     <form id="uploadForm" method="POST" action="/upload" enctype="multipart/form-data">
-      <input type="file" name="image" id="image" accept="image/*" required>
-      <button type="submit">Upload</button>
+        <input type="file" name="media" id="mediaInput" accept="image/*,video/*" required>
+        <button type="submit">Upload Media</button>
     </form>
-    
-
-    <!-- Upload Form Section -->
-    <div id="upload-container">
-        <h3>Upload a New Media</h3>
-        <form id="uploadFormMedia" enctype="multipart/form-data">
-            <input type="file" id="mediaInput" accept="image/*,video/*" aria-label="Select an image or video to upload" required />
-            <button type="submit" aria-label="Upload the selected media">Upload Media</button>
-        </form>
-    </div>
 
     <!-- Media Display Section -->
+    <h2>Uploaded Media</h2>
     <div id="media-container">
         <p>Loading media...</p>
     </div>
 
+    <h2>Admin Image Gallery</h2>
+    <div id="imageList" class="image-container"></div>
+
     <script>
         // Handle media upload
-        document.getElementById('uploadFormMedia').addEventListener('submit', function (event) {
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
             const fileInput = document.getElementById('mediaInput');
@@ -186,6 +203,48 @@
                 });
             }
         }
+
+        // Fetch the list of uploaded images for admins
+        async function fetchUploadedImages() {
+            try {
+                const response = await fetch('/admin/uploads?admin=true'); // Admin authentication query
+                if (response.ok) {
+                    const images = await response.json();
+                    displayImages(images);
+                } else {
+                    alert('Unauthorized access.');
+                }
+            } catch (error) {
+                console.error('Error fetching images:', error);
+            }
+        }
+
+        // Display the list of images in the admin interface
+        function displayImages(images) {
+            const imageList = document.getElementById('imageList');
+            imageList.innerHTML = ''; // Clear any previous images
+
+            images.forEach(image => {
+                const imageElement = document.createElement('div');
+                imageElement.classList.add('image-item');
+
+                const img = document.createElement('img');
+                img.src = `/uploads/${image}`;
+                img.alt = image;
+
+                const link = document.createElement('a');
+                link.href = `/uploads/${image}`;
+                link.download = image;  // Allow downloading
+                link.textContent = 'Download';
+
+                imageElement.appendChild(img);
+                imageElement.appendChild(link);
+                imageList.appendChild(imageElement);
+            });
+        }
+
+        // Initialize the page by fetching the uploaded images
+        fetchUploadedImages();
 
         // Load media when the page is ready
         loadMedia();

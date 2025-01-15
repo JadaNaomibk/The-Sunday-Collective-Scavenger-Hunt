@@ -23,26 +23,37 @@ const storage = multer.diskStorage({
 // Initialize multer with storage settings
 const upload = multer({ storage });
 
-// Endpoint to handle the photo upload
-app.post('/upload', upload.single('image'), (req, res) => {
+// Admin authentication middleware (simple example)
+const isAdmin = (req, res, next) => {
+  // Here you can implement a more sophisticated authentication method
+  // For now, we'll just simulate admin authentication using a query parameter
+  if (req.query.admin === 'true') {
+    return next();
+  }
+  return res.status(403).json({ error: 'Unauthorized access' });
+};
+
+// Endpoint to handle the photo/video upload
+app.post('/upload', upload.single('file'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
-  // Respond with the file path for use in the frontend
+  // Respond with the file URL for use in the frontend
   const fileUrl = `/uploads/${req.file.filename}`;
   res.json({ message: 'File uploaded successfully', fileUrl });
 });
 
-// Endpoint to return a list of uploaded files
-app.get('/uploads', (req, res) => {
+// Endpoint to return a list of uploaded files (accessible only by admins)
+app.get('/admin/uploads', isAdmin, (req, res) => {
   fs.readdir(path.join(__dirname, 'uploads'), (err, files) => {
     if (err) {
-      console.error('Error reading uploads directory:', err);
-      res.status(500).json({ error: 'Failed to list files' });
-    } else {
-      res.json(files);
+      return res.status(500).json({ error: 'Failed to list files' });
     }
+
+    // Respond with a list of image/video files
+    const mediaFiles = files.filter(file => /\.(jpg|jpeg|png|gif|mp4|mov)$/i.test(file));
+    res.json(mediaFiles); // Sends an array of file names
   });
 });
 
