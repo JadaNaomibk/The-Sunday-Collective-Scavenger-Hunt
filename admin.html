@@ -111,6 +111,32 @@
 </head>
 
 <body>
+  <!-- Admin Gallery Section -->
+<div id="adminGallery">
+  <h2>Admin Photo Gallery</h2>
+  <div id="gallery"></div> <!-- This is where the uploaded photos will be displayed -->
+</div>
+
+<script>
+  // Fetch the uploaded images
+  fetch('/admin/uploads?admin=true')
+    .then(response => response.json())
+    .then(data => {
+      const gallery = document.getElementById("gallery");
+      if (data && data.length > 0) {
+        data.forEach(file => {
+          const img = document.createElement("img");
+          img.src = `/uploads/${file}`;
+          img.alt = `Uploaded photo ${file}`;
+          gallery.appendChild(img);
+        });
+      } else {
+        gallery.innerHTML = "<p>No photos uploaded yet.</p>";
+      }
+    })
+    .catch(error => console.error("Error fetching admin photos:", error));
+</script>
+
     <h1>Admin Dashboard - Uploaded Media</h1>
 
     <!-- Upload Form -->
