@@ -1,37 +1,128 @@
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", function() {
-    
-    // Mobile menu toggle (e.g., for a "hamburger" menu)
-    const menuButton = document.getElementById("menuButton"); // The button that toggles the menu
-    const mobileMenu = document.getElementById("mobileMenu"); // The actual mobile menu
+    // Mobile menu toggle
+    const menuButton = document.getElementById("menuButton");
+    const mobileMenu = document.getElementById("mobileMenu");
 
-    // Add click event listener to the menu button
     if (menuButton) {
         menuButton.addEventListener("click", function() {
-            // Toggle the 'open' class on the mobile menu to show/hide it
             mobileMenu.classList.toggle("open");
         });
     }
 
-    // Example of handling a form submit for mobile responsiveness
-    const form = document.getElementById("contactForm"); // Example form element
-    if (form) {
-        form.addEventListener("submit", function(event) {
-            event.preventDefault(); // Prevent the form from refreshing the page
-            alert("Form submitted!"); // You can replace this with real form handling logic
-        });
+    // Media handling for photo and video capture
+    const videoElement = document.getElementById("camera");
+    const captureButton = document.getElementById("capture");
+    const recordButton = document.getElementById("record");
+    const stopButton = document.getElementById("stop-recording");
+    const photoGallery = document.getElementById("photoGallery");
+    const switchCameraButton = document.getElementById("switch-camera");
+    const uploadButton = document.getElementById("upload");
+
+    let mediaStream = null;
+    let mediaRecorder = null;
+    let isRecording = false;
+    let photoCount = 0;
+    let videoCount = 0;
+    const maxPhotos = 20;
+    const maxVideos = 3;
+    const maxVideoDuration = 3 * 60 * 1000;
+
+    // Request access to the user's camera
+    async function startCamera() {
+        try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "user" },
+                audio: true
+            });
+            videoElement.srcObject = mediaStream;
+        } catch (error) {
+            console.error("Error accessing camera:", error);
+            alert("Unable to access your camera.");
+        }
     }
 
-    // Example of handling dynamic resizing or layout adjustments
-    window.addEventListener("resize", function() {
-        const width = window.innerWidth;
+    // Capture photo
+    captureButton.addEventListener("click", () => {
+        if (photoCount >= maxPhotos) {
+            alert(`You can only take up to ${maxPhotos} photos.`);
+            return;
+        }
 
-        // Adjust layout or elements based on screen width (e.g., for mobile vs. desktop)
-        if (width < 600) {
-            document.body.style.backgroundColor = "lightblue"; // Change background color for small screens
+        const canvas = document.createElement("canvas");
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        const context = canvas.getContext("2d");
+        context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+        const imageUrl = canvas.toDataURL("image/png");
+        const img = document.createElement("img");
+        img.src = imageUrl;
+        photoGallery.appendChild(img);
+
+        photoCount++;
+        alert(`You have ${maxPhotos - photoCount} photos remaining.`);
+    });
+
+    // Start/stop video recording
+    recordButton.addEventListener("click", () => {
+        if (videoCount >= maxVideos) {
+            alert(`You can only record up to ${maxVideos} videos.`);
+            return;
+        }
+
+        if (isRecording) {
+            mediaRecorder.stop();
+            stopButton.style.display = "none";
+            recordButton.style.display = "block";
+            isRecording = false;
         } else {
-            document.body.style.backgroundColor = ""; // Reset for larger screens
+            mediaRecorder = new MediaRecorder(mediaStream);
+            mediaRecorder.start();
+            stopButton.style.display = "block";
+            recordButton.style.display = "none";
+            isRecording = true;
+
+            videoCount++;
+            alert(`Recording started. You have ${maxVideos - videoCount} videos remaining.`);
+
+            // Stop the recording after maxVideoDuration
+            setTimeout(() => {
+                if (isRecording) {
+                    mediaRecorder.stop();
+                    stopButton.style.display = "none";
+                    recordButton.style.display = "block";
+                    isRecording = false;
+                    alert("Recording stopped automatically after 3 minutes.");
+                }
+            }, maxVideoDuration);
+
+            mediaRecorder.ondataavailable = (event) => {
+                const videoBlob = event.data;
+                const videoUrl = URL.createObjectURL(videoBlob);
+                const videoElement = document.createElement("video");
+                videoElement.src = videoUrl;
+                videoElement.controls = true;
+                photoGallery.appendChild(videoElement);
+            };
         }
     });
 
+    // Switch camera
+    switchCameraButton.addEventListener("click", async () => {
+        if (mediaStream) {
+            const videoTracks = mediaStream.getVideoTracks();
+            videoTracks.forEach(track => track.stop());
+        }
+
+        const newFacingMode = videoElement.facingMode === "user" ? "environment" : "user";
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: newFacingMode },
+            audio: true
+        });
+        videoElement.srcObject = mediaStream;
+    });
+
+    // Initialize camera on load
+    startCamera();
 });

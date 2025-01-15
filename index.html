@@ -15,18 +15,26 @@
 
     body {
       font-family: 'RainbowsansColor', Arial, sans-serif;
-      margin: 0;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
-      background-color: #fff; /* White Background */
+      background-color: #f3eac3;
     }
 
-    /* Header */
+    /* Welcome Section */
+    #welcome-section {
+      text-align: center;
+      padding: 20px;
+      background-color: #f3eac3;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    /* Photo Section */
     #photo-section {
       flex: 1;
       padding: 16px;
-      background-color: #fff;
+      background-color: #f3eac3;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -37,7 +45,7 @@
     #photo-section h1 {
       font-size: 22px;
       margin-bottom: 16px;
-      color: #333;
+      color: #f3eac3;
     }
 
     #photo-section video {
@@ -47,48 +55,32 @@
       margin-bottom: 12px;
     }
 
-    #photo-section input {
+    #photo-section input, button {
       padding: 12px;
       margin: 10px 0;
       width: 90%;
       max-width: 300px;
       font-size: 14px;
-      border: 1px solid #ccc;
+      border: 1px solid #f3eac3;
       border-radius: 5px;
-    }
-
-    #photo-section button {
-      background-color: #fff;
-      color: #000;
-      padding: 12px 24px;
-      border: 1px solid #000;
-      border-radius: 6px;
-      font-size: 16px;
       cursor: pointer;
-      width: 80%;
-      max-width: 300px;
-      margin-bottom: 16px;
-    }
-
-    #photo-section button:hover {
-      background-color: #f5f5f5;
     }
 
     .photo-gallery {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 5px;
       width: 100%;
       padding: 10px 0;
+      justify-items: center;
     }
 
-    .photo-gallery img {
+    .photo-gallery img, .photo-gallery video {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 8px;
       max-width: 80px;
       max-height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
     }
 
     /* Map Section */
@@ -96,14 +88,16 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: #eaeaea;
-      padding: 10px 0;
+      background-color: #f3eac3;
+      padding: 20px 0;
+      position: relative; /* Add this line for layering stickers */
     }
 
     #map-section img {
       width: 100%;
+      max-width: 900px;
       height: auto;
-      max-width: 80%;
+      object-fit: cover;
       border-radius: 10px;
     }
 
@@ -111,128 +105,289 @@
     #instructions-section {
       margin-top: 20px;
       padding: 10px;
-      background-color: #fff;
+      background-color: #f3eac3;
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative; /* Add this line for layering stickers */
     }
 
     #instructions-section img {
       width: 100%;
       height: auto;
-      max-width: 300px;
+      max-width: 900px;
       border-radius: 8px;
     }
 
-    /* Mobile Media Queries */
+    /* Stickers (Dancing Animation) */
+    .sticker {
+      position: absolute;
+      animation: dance 2s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    .sticker1 {
+      top: 10%;
+      left: 10%;
+      width: 50px;
+      height: 50px;
+      background-image: url('sticker1.png');
+      background-size: cover;
+    }
+
+    .sticker2 {
+      top: 15%;
+      left: 80%;
+      width: 50px;
+      height: 50px;
+      background-image: url('sticker2.png');
+      background-size: cover;
+    }
+
+    .sticker3 {
+      top: 60%;
+      left: 40%;
+      width: 50px;
+      height: 50px;
+      background-image: url('sticker3.png');
+      background-size: cover;
+    }
+
+    /* Dancing Animation Keyframes */
+    @keyframes dance {
+      0% {
+        transform: translateY(0);
+      }
+      100% {
+        transform: translateY(-20px);
+      }
+    }
+
+    /* Mobile Adjustments */
     @media (max-width: 768px) {
-      #photo-section {
-        padding: 12px;
+      body {
+        padding: 10px;
       }
 
       #photo-section h1 {
         font-size: 18px;
       }
 
-      #photo-section input {
-        width: 90%;
+      #photo-section input, button {
+        width: 100%;
+        max-width: none;
       }
 
-      #photo-section button {
-        padding: 12px;
-        width: 90%;
-        font-size: 14px;
-      }
-
-      .photo-gallery {
-        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* Adjust number of images per row */
-      }
-
-      #map-section {
+      #map-section img, #instructions-section img {
+        width: 100%;
+        max-width: 100%;
         height: auto;
       }
 
-      #instructions-section {
-        flex-direction: column;
+      .photo-gallery img, .photo-gallery video {
+        max-width: 100px;
+        max-height: 100px;
       }
     }
 
-    /* Extra Small Screen (Phones) */
-    @media (max-width: 480px) {
-      #photo-section h1 {
-        font-size: 16px;
-      }
-
-      #photo-section input {
-        font-size: 12px;
-      }
-
-      #photo-section button {
-        padding: 10px;
-        font-size: 12px;
-      }
-
-      .photo-gallery img {
-        width: 70px;
-        height: 70px;
-      }
-
-      #map-section {
-        padding: 8px 0;
-      }
+    /* Footer Section */
+    #footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #f3eac3;
+      font-size: 18px;
     }
+
+    /* Background Music Controls */
+    #music-controls {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    #volume-slider {
+      width: 100px;
+    }
+
   </style>
 </head>
 <body>
+  <!-- Welcome Section -->
+  <div id="welcome-section">
+    <h2>WELCOME TO THE SUNDAY COLLECTIVE SCAVENGER HUNT</h2>
+  </div>
+
   <div id="photo-section">
-    <h1>Take a Photo or Video</h1>
+    <h1>The Sunday Collective Scavenger Hunt Game</h1>
+    <p>"Ready, set, go—grab your phone and start the show! A hunt awaits with clues to find, Capture the moments, follow the signs, The Sunday Collective’s waiting for you, Where adventure and fun are all brand new!"</p>
     <input type="text" id="playerName" placeholder="Enter your name" />
 
-    <!-- Video Feed -->
-    <video id="camera" autoplay></video>
+    <!-- Camera Preview -->
+    <video id="camera" autoplay playsinline></video>
 
-    <!-- Buttons for Capture and Video Recording -->
-    <button id="switch-camera">Switch Camera</button>
+    <!-- Capture and Record Buttons -->
     <button id="capture">Capture Photo</button>
-    <button id="record">Start Recording Video</button>
-    <button id="stop-recording" style="display:none;">Stop Recording</button>
+    <button id="record">Start Recording</button>
+    <button id="stop-recording" style="display: none;">Stop Recording</button>
+    <button id="switch-camera">Switch Camera</button>
     <button id="upload">Upload Photos and Videos</button>
 
-    <!-- Photo Gallery -->
-    <div class="photo-gallery" id="photoGallery"></div>
-
-    <!-- Thank You Message -->
-    <div id="thank-you-message" style="display:none;">Thank you for playing! Your photos and videos have been uploaded successfully.</div>
+    <!-- Photo and Video Gallery -->
+    <div id="photoGallery" class="photo-gallery"></div>
   </div>
 
   <!-- Instructions Section -->
   <div id="instructions-section">
-    <img src="instructions-placeholder.png" alt="Instructions Image" onerror="console.error('Instructions image failed to load. Check the file path.')">
+    <img src="instruction.png" alt="Scavenger Hunt Map">
   </div>
 
   <!-- Map Section -->
   <div id="map-section">
-    <img src="Heart.png" alt="Scavenger Hunt Map" onerror="console.error('Map image failed to load. Check the file path.')">
+    <img src="newscavmap.png" alt="Instructions Image">
+
+    <!-- Dancing Stickers -->
+    <div class="sticker sticker1"></div>
+    <div class="sticker sticker2"></div>
+    <div class="sticker sticker3"></div>
   </div>
 
+  <!-- Background Music Section -->
+  <div id="music-controls">
+    <button id="play-music">Play Music</button>
+    <button id="pause-music" style="display: none;">Pause Music</button>
+    <br>
+    <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+    <span id="volume-value">Volume: 50%</span>
+  </div>
+
+  <!-- Footer Section -->
+  <div id="footer">
+    <p>"Ready, set, go—grab your phone and start the show! A hunt awaits with clues to find, Capture the moments, follow the signs, The Sunday Collective’s waiting for you, Where adventure and fun are all brand new!"</p>
+  </div>
+
+  <!-- JavaScript to Enable Features -->
   <script>
-    // Get references to elements
-    const cameraElement = document.getElementById('camera');
+    let mediaStream;
+    let mediaRecorder;
+    let chunks = [];
+    let currentCamera = "user"; // Default to front camera
+    let photoCount = 0; // Track number of photos
+    let videoCount = 0; // Track number of videos
+
+    const camera = document.getElementById('camera');
     const captureButton = document.getElementById('capture');
     const recordButton = document.getElementById('record');
-    const stopRecordingButton = document.getElementById('stop-recording');
-    const uploadButton = document.getElementById('upload');
+    const stopButton = document.getElementById('stop-recording');
     const switchCameraButton = document.getElementById('switch-camera');
-    const playerNameInput = document.getElementById('playerName');
-    const thankYouMessage = document.getElementById('thank-you-message');
-    const photoGallery = document.getElementById('photoGallery');
+    const gallery = document.getElementById('photoGallery');
+    const playMusicButton = document.getElementById('play-music');
+    const pauseMusicButton = document.getElementById('pause-music');
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeValue = document.getElementById('volume-value');
+    const uploadButton = document.getElementById('upload');
 
-    let mediaStream = null;
-    let mediaRecorder = null;
-    let recordedBlobs = [];
-    let currentStream = null;
+    let backgroundMusic = new Audio('Jungle Village  D&DTTRPG Music  1 Hour.mp3');
+    backgroundMusic.loop = true;
+    backgroundMusic.volume = 0.5; // Default volume
 
-    // Function to start the camera
-    function
-::contentReference[oaicite:0]{index=0}
- 
+    // Initialize camera stream
+    async function initCamera() {
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: currentCamera },
+          audio: false
+        });
+        camera.srcObject = mediaStream;
+      } catch (error) {
+        alert('Error accessing camera: ' + error.message);
+      }
+    }
+
+    // Capture a photo
+    captureButton.addEventListener('click', () => {
+      if (photoCount >= 20) {
+        alert('You can only take 20 photos.');
+        return;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = camera.videoWidth;
+      canvas.height = camera.videoHeight;
+      canvas.getContext('2d').drawImage(camera, 0, 0, canvas.width, canvas.height);
+
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png');
+      gallery.appendChild(img);
+      photoCount++;
+    });
+
+    // Start recording video
+    recordButton.addEventListener('click', () => {
+      if (videoCount >= 3) {
+        alert('You can only record 3 videos.');
+        return;
+      }
+
+      chunks = [];
+      mediaRecorder = new MediaRecorder(mediaStream);
+      mediaRecorder.ondataavailable = (event) => chunks.push(event.data);
+      mediaRecorder.onstop = () => {
+        const videoBlob = new Blob(chunks, { type: 'video/mp4' });
+        const videoUrl = URL.createObjectURL(videoBlob);
+        const video = document.createElement('video');
+        video.src = videoUrl;
+        video.controls = true;
+        gallery.appendChild(video);
+        videoCount++;
+      };
+
+      mediaRecorder.start();
+      recordButton.style.display = 'none';
+      stopButton.style.display = 'block';
+
+      // Stop recording after 3 minutes
+      setTimeout(() => {
+        if (mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        }
+      }, 180000); // 180,000 ms = 3 minutes
+    });
+
+    // Stop recording video
+    stopButton.addEventListener('click', () => {
+      mediaRecorder.stop();
+      stopButton.style.display = 'none';
+      recordButton.style.display = 'block';
+    });
+
+    // Switch between front and rear cameras
+    switchCameraButton.addEventListener('click', () => {
+      currentCamera = currentCamera === "user" ? "environment" : "user";
+      mediaStream.getTracks().forEach(track => track.stop());
+      initCamera();
+    });
+
+    // Play background music
+    playMusicButton.addEventListener('click', () => {
+      backgroundMusic.play();
+      playMusicButton.style.display = 'none';
+      pauseMusicButton.style.display = 'inline-block';
+    });
+
+    // Pause background music
+    pauseMusicButton.addEventListener('click', () => {
+      backgroundMusic.pause();
+      playMusicButton.style.display = 'inline-block';
+      pauseMusicButton.style.display = 'none';
+    });
+
+    // Adjust volume
+    volumeSlider.addEventListener('input', () => {
+      backgroundMusic.volume = volumeSlider.value;
+      volumeValue.textContent = `Volume: ${(volumeSlider.value * 100).toFixed(0)}%`;
+    });
+
+    // Initialize camera and media stream
+    initCamera();
+  </script>
+</body>
+</html>

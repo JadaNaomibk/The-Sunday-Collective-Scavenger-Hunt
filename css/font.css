@@ -1,19 +1,9 @@
 @font-face {
-    font-family: 'RainbowSans';
-    src: url('../assets/fonts/RainbowSans-9Y00K.otf') format('opentype');
-  }
-  
-  @font-face {
-    font-family: 'RainbowSansBold';
-    src: url('../assets/fonts/RainbowSansBold-lgEEd.otf') format('opentype');
-  }
-  
-  @font-face {
-    font-family: 'RainbowSansColor';
-    src: url('../assets/fonts/RainbowSansColor-nREEg.otf') format('opentype');
-  }
-  
-  body {
-    font-family: 'RainbowSansColor', Arial, sans-serif;
-  }
-  
+  font-family: 'CrimsonPro';
+  src: url('../assets/fonts/CrimsonPro-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900; /* Assuming variable weight range, adjust as needed */
+}
+
+body {
+  font-family: 'CrimsonPro', Arial, sans-serif;
+}

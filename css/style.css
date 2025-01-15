@@ -21,9 +21,16 @@
     font-weight: normal;
 }
 
-/* Apply RainbowsansColor as the default font */
+/* Import CrimsonPro (Variable Font) */
+@font-face {
+    font-family: 'CrimsonPro';
+    src: url('../assets/fonts/CrimsonPro-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900; /* Adjust weight range based on the variable font's capabilities */
+}
+
+/* Apply CrimsonPro as the default font */
 body {
-    font-family: 'RainbowsansColor', Arial, sans-serif;
+    font-family: 'CrimsonPro', 'RainbowsansColor', Arial, sans-serif;
     font-size: 16px; /* Default font size for readability */
     line-height: 1.5; /* Improved readability */
     margin: 0;
@@ -32,7 +39,7 @@ body {
 
 /* Apply the same font to common elements */
 h1, h2, h3, p, div, button, input, textarea {
-    font-family: 'RainbowsansColor', Arial, sans-serif;
+    font-family: 'CrimsonPro', 'RainbowsansColor', Arial, sans-serif;
     margin: 0;
     padding: 0;
 }
