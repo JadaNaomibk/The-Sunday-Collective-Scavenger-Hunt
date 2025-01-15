@@ -19,7 +19,7 @@
             text-align: center;
         }
 
-        #photo-container {
+        #media-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
@@ -27,7 +27,7 @@
             margin-top: 20px;
         }
 
-        .photo-card {
+        .media-card {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -39,7 +39,8 @@
             max-width: 200px;
         }
 
-        .photo-card img {
+        .media-card img,
+        .media-card video {
             max-width: 100%;
             border-radius: 5px;
             margin-bottom: 10px;
@@ -82,48 +83,51 @@
 </head>
 
 <body>
-    <h1>Admin Dashboard - Uploaded Photos</h1>
+    <h1>Admin Dashboard - Uploaded Media</h1>
 
     <!-- Upload Form Section -->
     <div id="upload-container">
-        <h3>Upload a New Photo</h3>
-        <form id="uploadForm">
-            <input type="file" id="photoInput" accept="image/*" required />
-            <button type="submit">Upload Photo</button>
+        <h3>Upload a New Media</h3>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="mediaInput" accept="image/*,video/*" required />
+            <button type="submit">Upload Media</button>
         </form>
     </div>
 
-    <!-- Photos Display Section -->
-    <div id="photo-container">
-        <p>Loading photos...</p>
+    <!-- Media Display Section -->
+    <div id="media-container">
+        <p>Loading media...</p>
     </div>
 
     <script>
-        // Handle photo upload
+        // Handle media upload
         document.getElementById('uploadForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
-            const fileInput = document.getElementById('photoInput');
+            const fileInput = document.getElementById('mediaInput');
             const file = fileInput.files[0];
 
             if (file) {
                 const reader = new FileReader();
                 reader.onloadend = function () {
-                    // Get the base64 string of the photo
-                    const base64Photo = reader.result;
+                    // Get the base64 string of the media
+                    const base64Media = reader.result;
 
-                    // Get existing photos from localStorage or start with an empty array
-                    const photos = JSON.parse(localStorage.getItem('photos')) || [];
+                    // Get existing media from localStorage or start with an empty array
+                    const media = JSON.parse(localStorage.getItem('media')) || [];
 
-                    // Add the new photo to the list
-                    photos.push(base64Photo);
+                    // Add the new media to the list
+                    media.push({
+                        type: file.type.startsWith('image') ? 'image' : 'video',
+                        src: base64Media
+                    });
 
-                    // Store the updated photo list in localStorage
-                    localStorage.setItem('photos', JSON.stringify(photos));
+                    // Store the updated media list in localStorage
+                    localStorage.setItem('media', JSON.stringify(media));
 
                     // Optionally, update the UI or notify the user
-                    alert('Photo uploaded successfully!');
-                    loadPhotos(); // Reload the photos on the admin page
+                    alert('Media uploaded successfully!');
+                    loadMedia(); // Reload the media on the admin page
                 };
 
                 // Read the file as base64
@@ -131,38 +135,41 @@
             }
         });
 
-        // Function to load photos from localStorage
-        function loadPhotos() {
-            const photos = JSON.parse(localStorage.getItem('photos')) || [];
+        // Function to load media from localStorage
+        function loadMedia() {
+            const media = JSON.parse(localStorage.getItem('media')) || [];
 
-            const container = document.getElementById('photo-container');
+            const container = document.getElementById('media-container');
             container.innerHTML = ''; // Clear loading message
 
-            if (photos.length === 0) {
-                container.innerHTML = '<p>No photos uploaded yet.</p>';
+            if (media.length === 0) {
+                container.innerHTML = '<p>No media uploaded yet.</p>';
             } else {
-                photos.forEach((photoSrc, index) => {
-                    // Create photo card for each uploaded photo
+                media.forEach((mediaItem, index) => {
+                    // Create media card for each uploaded media
                     const card = document.createElement('div');
-                    card.className = 'photo-card';
+                    card.className = 'media-card';
 
-                    const img = document.createElement('img');
-                    img.src = photoSrc; // Using base64 photo from localStorage
-                    img.alt = 'Uploaded Photo';
+                    const mediaElement = document.createElement(mediaItem.type === 'image' ? 'img' : 'video');
+                    mediaElement.src = mediaItem.src; // Using base64 media from localStorage
+                    mediaElement.alt = mediaItem.type === 'image' ? 'Uploaded Photo' : 'Uploaded Video';
+                    if (mediaItem.type === 'video') {
+                        mediaElement.controls = true; // Add controls for videos
+                    }
 
                     const playerName = document.createElement('div');
                     playerName.className = 'player-name';
                     playerName.textContent = `Player: Player ${index + 1}`; // Display player as Player X
 
-                    card.appendChild(img);
+                    card.appendChild(mediaElement);
                     card.appendChild(playerName);
                     container.appendChild(card);
                 });
             }
         }
 
-        // Load photos when the page is ready
-        loadPhotos();
+        // Load media when the page is ready
+        loadMedia();
     </script>
 </body>
 

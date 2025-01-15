@@ -43,6 +43,30 @@ app.get('/uploads', (req, res) => {
   });
 });
 
+// Route to serve the homepage (index.html)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Route to serve the admin page (admin.html)
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+// Endpoint for saving player progress or data (example route)
+app.post('/save-progress', (req, res) => {
+  // Logic to save player progress in a file or database
+  // Example: saving data to a JSON file
+  const playerData = req.body; // Assuming data comes in the body of the request
+  fs.writeFile('progress.json', JSON.stringify(playerData), (err) => {
+    if (err) {
+      console.error('Error saving progress:', err);
+      return res.status(500).json({ error: 'Failed to save progress' });
+    }
+    res.json({ message: 'Progress saved successfully' });
+  });
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

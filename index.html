@@ -401,23 +401,23 @@
     playMusicButton.addEventListener('click', () => {
       backgroundMusic.play();
       playMusicButton.style.display = 'none';
-      pauseMusicButton.style.display = 'block';
+      pauseMusicButton.style.display = 'inline-block';
     });
 
     // Pause background music
     pauseMusicButton.addEventListener('click', () => {
       backgroundMusic.pause();
+      playMusicButton.style.display = 'inline-block';
       pauseMusicButton.style.display = 'none';
-      playMusicButton.style.display = 'block';
     });
 
-    // Adjust music volume
+    // Adjust volume
     volumeSlider.addEventListener('input', () => {
       backgroundMusic.volume = volumeSlider.value;
-      volumeValue.textContent = `Volume: ${Math.round(volumeSlider.value * 100)}%`;
+      volumeValue.textContent = `Volume: ${(volumeSlider.value * 100).toFixed(0)}%`;
     });
 
-    // Initialize the camera on page load
+    // Initialize camera when the page loads
     initCamera();
   </script>
 </body>
