@@ -1,9 +1,14 @@
-@font-face {
-  font-family: 'CrimsonPro';
-  src: url('../assets/fonts/CrimsonPro-VariableFont_wght.ttf') format('truetype');
-  font-weight: 100 900; /* Assuming variable weight range, adjust as needed */
+/* Add padding and adjust button styles */
+button {
+  padding: 0.8em 1.5em;
+  font-size: 1em;
+  border: none;
+  background-color: #a9d39e; /* Button background color */
+  color: #ffffff; /* Button text color */
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-body {
-  font-family: 'CrimsonPro', Arial, sans-serif;
+button:hover {
+  background-color: #444; /* Button hover background color */
 }
