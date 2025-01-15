@@ -46,6 +46,11 @@
             margin-bottom: 10px;
         }
 
+        .media-card img, .media-card video {
+            max-height: 150px;
+            max-width: 150px;
+        }
+
         .player-name {
             font-size: 14px;
             color: #555;
@@ -65,6 +70,7 @@
         #upload-container input {
             padding: 10px;
             margin-bottom: 10px;
+            cursor: pointer;
         }
 
         #upload-container button {
@@ -85,12 +91,18 @@
 <body>
     <h1>Admin Dashboard - Uploaded Media</h1>
 
+    <form id="uploadForm" method="POST" action="/upload" enctype="multipart/form-data">
+      <input type="file" name="image" id="image" accept="image/*" required>
+      <button type="submit">Upload</button>
+    </form>
+    
+
     <!-- Upload Form Section -->
     <div id="upload-container">
         <h3>Upload a New Media</h3>
-        <form id="uploadForm" enctype="multipart/form-data">
-            <input type="file" id="mediaInput" accept="image/*,video/*" required />
-            <button type="submit">Upload Media</button>
+        <form id="uploadFormMedia" enctype="multipart/form-data">
+            <input type="file" id="mediaInput" accept="image/*,video/*" aria-label="Select an image or video to upload" required />
+            <button type="submit" aria-label="Upload the selected media">Upload Media</button>
         </form>
     </div>
 
@@ -101,13 +113,20 @@
 
     <script>
         // Handle media upload
-        document.getElementById('uploadForm').addEventListener('submit', function (event) {
+        document.getElementById('uploadFormMedia').addEventListener('submit', function (event) {
             event.preventDefault();
 
             const fileInput = document.getElementById('mediaInput');
             const file = fileInput.files[0];
 
             if (file) {
+                const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB limit
+
+                if (file.size > MAX_FILE_SIZE) {
+                    alert('File size exceeds 5MB limit. Please upload a smaller file.');
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onloadend = function () {
                     // Get the base64 string of the media

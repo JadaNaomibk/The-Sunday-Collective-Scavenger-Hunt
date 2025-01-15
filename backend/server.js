@@ -8,7 +8,7 @@ const PORT = 3000;
 
 // Middleware for static files
 app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Set up multer storage for uploaded images
 const storage = multer.diskStorage({
@@ -24,11 +24,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Endpoint to handle the photo upload
-app.post('/upload', upload.single('photo'), (req, res) => {
+app.post('/upload', upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
-  res.json({ message: 'File uploaded successfully', file: req.file });
+
+  // Respond with the file path for use in the frontend
+  const fileUrl = `/uploads/${req.file.filename}`;
+  res.json({ message: 'File uploaded successfully', fileUrl });
 });
 
 // Endpoint to return a list of uploaded files
@@ -54,9 +57,7 @@ app.get('/admin', (req, res) => {
 });
 
 // Endpoint for saving player progress or data (example route)
-app.post('/save-progress', (req, res) => {
-  // Logic to save player progress in a file or database
-  // Example: saving data to a JSON file
+app.post('/save-progress', express.json(), (req, res) => {
   const playerData = req.body; // Assuming data comes in the body of the request
   fs.writeFile('progress.json', JSON.stringify(playerData), (err) => {
     if (err) {

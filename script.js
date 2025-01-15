@@ -60,9 +60,51 @@ document.addEventListener("DOMContentLoaded", function() {
         img.src = imageUrl;
         photoGallery.appendChild(img);
 
+        // Prepare for upload
+        uploadImageToServer(imageUrl);
+
         photoCount++;
         alert(`You have ${maxPhotos - photoCount} photos remaining.`);
     });
+
+    // Function to upload the captured image to the server
+    async function uploadImageToServer(imageUrl) {
+        const formData = new FormData();
+        // Convert data URL to Blob
+        const blob = dataURItoBlob(imageUrl);
+        formData.append("image", blob, "photo.png");
+
+        try {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert('Image uploaded successfully!');
+                console.log('File URL:', result.fileUrl);
+            } else {
+                alert('Image upload failed.');
+            }
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert('Failed to upload image.');
+        }
+    }
+
+    // Convert a data URL to a Blob
+    function dataURItoBlob(dataURI) {
+        const byteString = atob(dataURI.split(',')[1]);
+        const arrayBuffer = new ArrayBuffer(byteString.length);
+        const uintArray = new Uint8Array(arrayBuffer);
+
+        for (let i = 0; i < byteString.length; i++) {
+            uintArray[i] = byteString.charCodeAt(i);
+        }
+
+        return new Blob([uintArray], { type: 'image/png' });
+    }
 
     // Start/stop video recording
     recordButton.addEventListener("click", () => {
