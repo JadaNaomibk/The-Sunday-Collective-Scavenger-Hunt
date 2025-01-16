@@ -1,3 +1,4 @@
+
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
@@ -10,13 +11,13 @@ const PORT = 3000;
 app.use(express.static('public'));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Set up multer storage for uploaded images
+// Set up multer storage for uploaded images/videos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Destination folder for the uploaded files
+    cb(null, 'uploads/'); // Store files in 'uploads' folder
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Rename file to avoid conflicts
+    cb(null, Date.now() + path.extname(file.originalname)); // Create unique filenames
   },
 });
 
@@ -25,39 +26,45 @@ const upload = multer({ storage });
 
 // Admin authentication middleware (simple example)
 const isAdmin = (req, res, next) => {
-  // Here you can implement a more sophisticated authentication method
-  // For now, we'll just simulate admin authentication using a query parameter
+  // Simulate admin authentication using a query parameter
   if (req.query.admin === 'true') {
     return next();
   }
   return res.status(403).json({ error: 'Unauthorized access' });
 };
 
+// In-memory storage for uploaded media metadata (player name and file info)
+let uploadedMedia = []; // Store uploaded media metadata here
+
 // Endpoint to handle the photo/video upload
 app.post('/upload', upload.single('file'), (req, res) => {
-  if (!req.file) {
+  const { playerName } = req.body; // Assuming the username is sent with the file
+  const file = req.file;
+  
+  if (!file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
-  // Respond with the file URL for use in the frontend
-  const fileUrl = `/uploads/${req.file.filename}`;
-  res.json({ message: 'File uploaded successfully', fileUrl });
+  // Save the media data with player name and file type
+  const mediaData = {
+    filename: file.filename,
+    playerName: playerName,
+    type: file.mimetype.startsWith('image') ? 'image' : 'video',
+  };
+
+  // Store media data (you could save this in a database instead)
+  uploadedMedia.push(mediaData);
+
+  res.status(200).json({ message: 'File uploaded successfully', fileUrl: `/uploads/${file.filename}` });
 });
 
 // Endpoint to return a list of uploaded files (accessible only by admins)
 app.get('/admin/uploads', isAdmin, (req, res) => {
-  fs.readdir(path.join(__dirname, 'uploads'), (err, files) => {
-    if (err) {
-      return res.status(500).json({ error: 'Failed to list files' });
-    }
-
-    // Respond with a list of image/video files
-    const mediaFiles = files.filter(file => /\.(jpg|jpeg|png|gif|mp4|mov)$/i.test(file));
-    res.json(mediaFiles); // Sends an array of file names
-  });
+  // Respond with the list of media files and player names
+  res.json(uploadedMedia); 
 });
 
-// Route to serve the homepage (index.html)
+// Endpoint to serve the homepage (index.html)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
