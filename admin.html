@@ -64,7 +64,7 @@
 
   <script>
     // Fetch uploaded photos from the server
-    fetch('/uploads')
+    fetch('/admin/uploads')  // Update this to match your backend route for fetching uploaded files
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -73,7 +73,7 @@
       })
       .then((data) => {
         const container = document.getElementById('photo-container');
-        container.innerHTML = ''; // Clear loading message
+        container.innerHTML = ''; // Clear the loading message
 
         if (data.length === 0) {
           container.innerHTML = '<p>No photos uploaded yet.</p>';
@@ -84,12 +84,12 @@
             card.className = 'photo-card';
 
             const img = document.createElement('img');
-            img.src = `/uploads/${item.photo}`;
+            img.src = `/uploads/${item.filename}`;  // Ensure you're using the correct property (filename)
             img.alt = 'Uploaded Photo';
 
             const playerName = document.createElement('div');
             playerName.className = 'player-name';
-            playerName.textContent = `Player: ${item.playerName}`;
+            playerName.textContent = `Player: ${item.playerName || 'Unknown'}`;
 
             card.appendChild(img);
             card.appendChild(playerName);
@@ -101,19 +101,6 @@
         console.error('Error loading photos:', err);
         document.getElementById('photo-container').innerHTML = '<p>Error loading photos. Please try again later.</p>';
       });
-
-    // Added change: Fetch images from '/uploads' endpoint and display them
-    fetch('/uploads')
-      .then(response => response.json())
-      .then(images => {
-        const gallery = document.getElementById('photo-container');
-        images.forEach(img => {
-          const imgElement = document.createElement('img');
-          imgElement.src = `/uploads/${img}`;
-          gallery.appendChild(imgElement);
-        });
-      })
-      .catch(error => console.error('Error loading images:', error));
   </script>
 </body>
 </html>

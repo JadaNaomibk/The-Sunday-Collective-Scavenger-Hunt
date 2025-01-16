@@ -1,4 +1,3 @@
-
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
@@ -7,14 +6,21 @@ const path = require('path');
 const app = express();
 const PORT = 3000;
 
+// Ensure the 'uploads' folder exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true }); // Create the folder and its parent directories if needed
+  console.log('Uploads folder created');
+}
+
 // Middleware for static files
 app.use(express.static('public'));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(uploadsDir)); // Serve static files from 'uploads' folder
 
 // Set up multer storage for uploaded images/videos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Store files in 'uploads' folder
+    cb(null, uploadsDir); // Store files in the 'uploads' folder
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname)); // Create unique filenames
@@ -26,7 +32,7 @@ const upload = multer({ storage });
 
 // Admin authentication middleware (simple example)
 const isAdmin = (req, res, next) => {
-  // Simulate admin authentication using a query parameter
+  // Simulate admin authentication using a query parameter (e.g., ?admin=true)
   if (req.query.admin === 'true') {
     return next();
   }
@@ -52,8 +58,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
     type: file.mimetype.startsWith('image') ? 'image' : 'video',
   };
 
-  // Store media data (you could save this in a database instead)
-  uploadedMedia.push(mediaData);
+  uploadedMedia.push(mediaData); // Store uploaded media metadata
 
   res.status(200).json({ message: 'File uploaded successfully', fileUrl: `/uploads/${file.filename}` });
 });
