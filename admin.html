@@ -1,280 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Uploaded Media</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
 
-        h1 {
-            font-size: 28px;
-            color: #333;
-            text-align: center;
-        }
+    h1 {
+      font-size: 28px;
+      color: #333;
+      text-align: center;
+    }
 
-        #media-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-        }
+    #photo-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
 
-        .media-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-            max-width: 200px;
-        }
+    .photo-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+      max-width: 200px;
+    }
 
-        .media-card img,
-        .media-card video {
-            max-width: 100%;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
+    .photo-card img {
+      max-width: 100%;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
 
-        .media-card img,
-        .media-card video {
-            max-height: 150px;
-            max-width: 150px;
-        }
+    .player-name {
+      font-size: 14px;
+      color: #555;
+      text-align: center;
+    }
 
-        .player-name {
-            font-size: 14px;
-            color: #555;
-            text-align: center;
-        }
-
-        p {
-            text-align: center;
-            color: #666;
-        }
-
-        #upload-container {
-            margin: 20px auto;
-            text-align: center;
-        }
-
-        #upload-container input {
-            padding: 10px;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
-
-        #upload-container button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        #upload-container button:hover {
-            background-color: #45a049;
-        }
-
-        .image-container {
-            display: flex;
-            flex-wrap: wrap;
-        }
-
-        .image-item {
-            margin: 10px;
-            width: 150px;
-        }
-
-        .image-item img {
-            width: 100%;
-            height: auto;
-        }
-
-        .image-item a {
-            display: block;
-            text-align: center;
-            margin-top: 5px;
-        }
-    </style>
+    p {
+      text-align: center;
+      color: #666;
+    }
+  </style>
 </head>
-
 <body>
-  <!-- Admin Gallery Section -->
-<div id="adminGallery">
-  <h2>Admin Photo Gallery</h2>
-  <div id="gallery"></div> <!-- This is where the uploaded photos will be displayed -->
-</div>
+  <h1>Uploaded Photos</h1>
+  <div id="photo-container">
+    <p>Loading photos...</p>
+  </div>
 
-<script>
-  // Fetch the uploaded images
-  fetch('/admin/uploads?admin=true')
-    .then(response => response.json())
-    .then(data => {
-      const gallery = document.getElementById("gallery");
-      if (data && data.length > 0) {
-        data.forEach(file => {
-          const img = document.createElement("img");
-          img.src = `/uploads/${file}`;
-          img.alt = `Uploaded photo ${file}`;
-          gallery.appendChild(img);
+  <script>
+    // Fetch uploaded photos from the server
+    fetch('/uploads')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const container = document.getElementById('photo-container');
+        container.innerHTML = ''; // Clear loading message
+
+        if (data.length === 0) {
+          container.innerHTML = '<p>No photos uploaded yet.</p>';
+        } else {
+          data.forEach((item) => {
+            // Create photo card for each uploaded photo
+            const card = document.createElement('div');
+            card.className = 'photo-card';
+
+            const img = document.createElement('img');
+            img.src = `/uploads/${item.photo}`;
+            img.alt = 'Uploaded Photo';
+
+            const playerName = document.createElement('div');
+            playerName.className = 'player-name';
+            playerName.textContent = `Player: ${item.playerName}`;
+
+            card.appendChild(img);
+            card.appendChild(playerName);
+            container.appendChild(card);
+          });
+        }
+      })
+      .catch((err) => {
+        console.error('Error loading photos:', err);
+        document.getElementById('photo-container').innerHTML = '<p>Error loading photos. Please try again later.</p>';
+      });
+
+    // Added change: Fetch images from '/uploads' endpoint and display them
+    fetch('/uploads')
+      .then(response => response.json())
+      .then(images => {
+        const gallery = document.getElementById('photo-container');
+        images.forEach(img => {
+          const imgElement = document.createElement('img');
+          imgElement.src = `/uploads/${img}`;
+          gallery.appendChild(imgElement);
         });
-      } else {
-        gallery.innerHTML = "<p>No photos uploaded yet.</p>";
-      }
-    })
-    .catch(error => console.error("Error fetching admin photos:", error));
-</script>
-
-    <h1>Admin Dashboard - Uploaded Media</h1>
-
-    <!-- Upload Form -->
-    <form id="uploadForm" method="POST" action="/upload" enctype="multipart/form-data">
-        <input type="file" name="media" id="mediaInput" accept="image/*,video/*" required>
-        <button type="submit">Upload Media</button>
-    </form>
-
-    <!-- Media Display Section -->
-    <h2>Uploaded Media</h2>
-    <div id="media-container">
-        <p>Loading media...</p>
-    </div>
-
-    <h2>Admin Image Gallery</h2>
-    <div id="imageList" class="image-container"></div>
-
-    <script>
-        // Handle media upload
-        document.getElementById('uploadForm').addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            const fileInput = document.getElementById('mediaInput');
-            const file = fileInput.files[0];
-
-            if (file) {
-                const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB limit
-
-                if (file.size > MAX_FILE_SIZE) {
-                    alert('File size exceeds 5MB limit. Please upload a smaller file.');
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onloadend = function () {
-                    // Get the base64 string of the media
-                    const base64Media = reader.result;
-
-                    // Get existing media from localStorage or start with an empty array
-                    const media = JSON.parse(localStorage.getItem('media')) || [];
-
-                    // Add the new media to the list
-                    media.push({
-                        type: file.type.startsWith('image') ? 'image' : 'video',
-                        src: base64Media
-                    });
-
-                    // Store the updated media list in localStorage
-                    localStorage.setItem('media', JSON.stringify(media));
-
-                    // Optionally, update the UI or notify the user
-                    alert('Media uploaded successfully!');
-                    loadMedia(); // Reload the media on the admin page
-                };
-
-                // Read the file as base64
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // Function to load media from localStorage
-        function loadMedia() {
-            const media = JSON.parse(localStorage.getItem('media')) || [];
-
-            const container = document.getElementById('media-container');
-            container.innerHTML = ''; // Clear loading message
-
-            if (media.length === 0) {
-                container.innerHTML = '<p>No media uploaded yet.</p>';
-            } else {
-                media.forEach((mediaItem, index) => {
-                    // Create media card for each uploaded media
-                    const card = document.createElement('div');
-                    card.className = 'media-card';
-
-                    const mediaElement = document.createElement(mediaItem.type === 'image' ? 'img' : 'video');
-                    mediaElement.src = mediaItem.src; // Using base64 media from localStorage
-                    mediaElement.alt = mediaItem.type === 'image' ? 'Uploaded Photo' : 'Uploaded Video';
-                    if (mediaItem.type === 'video') {
-                        mediaElement.controls = true; // Add controls for videos
-                    }
-
-                    const playerName = document.createElement('div');
-                    playerName.className = 'player-name';
-                    playerName.textContent = `Player: Player ${index + 1}`; // Display player as Player X
-
-                    card.appendChild(mediaElement);
-                    card.appendChild(playerName);
-                    container.appendChild(card);
-                });
-            }
-        }
-
-        // Fetch the list of uploaded images for admins
-        async function fetchUploadedImages() {
-            try {
-                const response = await fetch('/admin/uploads?admin=true'); // Admin authentication query
-                if (response.ok) {
-                    const images = await response.json();
-                    displayImages(images);
-                } else {
-                    alert('Unauthorized access.');
-                }
-            } catch (error) {
-                console.error('Error fetching images:', error);
-            }
-        }
-
-        // Display the list of images in the admin interface
-        function displayImages(images) {
-            const imageList = document.getElementById('imageList');
-            imageList.innerHTML = ''; // Clear any previous images
-
-            images.forEach(image => {
-                const imageElement = document.createElement('div');
-                imageElement.classList.add('image-item');
-
-                const img = document.createElement('img');
-                img.src = `/uploads/${image}`;
-                img.alt = image;
-
-                const link = document.createElement('a');
-                link.href = `/uploads/${image}`;
-                link.download = image;  // Allow downloading
-                link.textContent = 'Download';
-
-                imageElement.appendChild(img);
-                imageElement.appendChild(link);
-                imageList.appendChild(imageElement);
-            });
-        }
-
-        // Initialize the page by fetching the uploaded images
-        fetchUploadedImages();
-
-        // Load media when the page is ready
-        loadMedia();
-    </script>
+      })
+      .catch(error => console.error('Error loading images:', error));
+  </script>
 </body>
-
 </html>

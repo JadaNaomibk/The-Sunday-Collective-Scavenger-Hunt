@@ -240,6 +240,9 @@
     <p>"Ready, set, go—grab your phone and start the show! A hunt awaits with clues to find, Capture the moments, follow the signs, The Sunday Collective’s waiting for you, Where adventure and fun are all brand new!"</p>
     <input type="text" id="playerName" placeholder="Enter your name" />
 
+    <button id="saveUsername">Save Username</button>
+    <p id="usernameDisplay" style="margin-top: 10px;"></p>
+
     <!-- Camera Preview -->
     <video id="camera" autoplay playsinline></video>
 
@@ -261,12 +264,12 @@
 
   <!-- Instructions Section -->
   <div id="instructions-section">
-    <img src="instruction.png" alt="Scavenger Hunt Map">
+    <img src="howto.png" alt="Scavenger Hunt Map">
   </div>
 
   <!-- Map Section -->
   <div id="map-section">
-    <img src="newscavmap.png" alt="Instructions Image">
+    <img src="TSC SCAVENGER HUNT MAP .png" alt="Instructions Image">
 
     <!-- Dancing Stickers -->
     <div class="sticker sticker1"></div>
@@ -288,6 +291,12 @@
     <p>"Thank you so much for playing!"</p>
   </div>
 
+  <!-- Background Music File (Insert the path to your MP3 file) -->
+  <audio id="background-music" loop>
+    <source src="Jungle Village  D&DTTRPG Music  1 Hour-[AudioTrimmer.com] copy.mp3" type="audio/mp3">
+    Your browser does not support the audio element.
+  </audio>
+
   <!-- JavaScript to Enable Features -->
   <script>
     let mediaStream;
@@ -295,124 +304,141 @@
     let chunks = [];
     let currentCamera = "user"; // Default to front camera
     let photoCount = 0; // Track number of photos
+    let videoCount = 0; // Track number of videos
 
-    // Elements
-    const camera = document.getElementById("camera");
-    const captureButton = document.getElementById("capture");
-    const recordButton = document.getElementById("record");
-    const stopRecordingButton = document.getElementById("stop-recording");
-    const switchCameraButton = document.getElementById("switch-camera");
-    const uploadButton = document.getElementById("upload");
-    const photoGallery = document.getElementById("photoGallery");
-    const playerNameInput = document.getElementById("playerName");
-    const thankYouMessage = document.getElementById("thank-you-message");
-    const playMusicButton = document.getElementById("play-music");
-    const pauseMusicButton = document.getElementById("pause-music");
-    const volumeSlider = document.getElementById("volume-slider");
-    const volumeValue = document.getElementById("volume-value");
+    const camera = document.getElementById('camera');
+    const captureButton = document.getElementById('capture');
+    const recordButton = document.getElementById('record');
+    const stopButton = document.getElementById('stop-recording');
+    const switchCameraButton = document.getElementById('switch-camera');
+    const gallery = document.getElementById('photoGallery');
+    const playMusicButton = document.getElementById('play-music');
+    const pauseMusicButton = document.getElementById('pause-music');
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeValue = document.getElementById('volume-value');
+    const uploadButton = document.getElementById('upload');
+    const thankYouMessage = document.getElementById('thank-you-message');
+    const usernameDisplay = document.getElementById('usernameDisplay');
 
-    // Request camera and microphone access
-    async function startMedia() {
-      try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ 
-          video: true, 
-          audio: true 
-        });
-        camera.srcObject = mediaStream;
-      } catch (error) {
-        console.error("Error accessing media devices.", error);
+    const backgroundMusic = document.getElementById('background-music');
+
+    // Save username functionality
+    document.getElementById('saveUsername').addEventListener('click', () => {
+      const playerName = document.getElementById('playerName').value.trim();
+      if (playerName) {
+        localStorage.setItem('playerName', playerName); // Save to localStorage
+        usernameDisplay.textContent = `Hello, ${playerName}!`; // Display saved name
+      } else {
+        alert('Please enter your name.');
       }
-    }
+    });
 
-    // Switch between front and back camera
-    function switchCamera() {
-      currentCamera = (currentCamera === "user") ? "environment" : "user";
-      stopMedia();
-      startMedia();
-    }
+    // Play background music
+    playMusicButton.addEventListener('click', () => {
+      backgroundMusic.play();
+      playMusicButton.style.display = 'none';
+      pauseMusicButton.style.display = 'inline-block';
+    });
 
-    // Stop media stream
-    function stopMedia() {
-      const tracks = mediaStream.getTracks();
-      tracks.forEach(track => track.stop());
-    }
+    // Pause background music
+    pauseMusicButton.addEventListener('click', () => {
+      backgroundMusic.pause();
+      playMusicButton.style.display = 'inline-block';
+      pauseMusicButton.style.display = 'none';
+    });
 
-    // Take a photo and show it in the gallery
-    function capturePhoto() {
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-      canvas.width = camera.videoWidth;
-      canvas.height = camera.videoHeight;
-      context.drawImage(camera, 0, 0, canvas.width, canvas.height);
-
-      const dataUrl = canvas.toDataURL("image/jpeg");
-      const img = new Image();
-      img.src = dataUrl;
-      img.classList.add("question-mark"); // Add a question mark overlay
-
-      photoGallery.appendChild(img);
-      photoCount++;
-    }
-
-    // Start recording video
-    function startRecording() {
-      mediaRecorder = new MediaRecorder(mediaStream);
-      mediaRecorder.ondataavailable = (event) => {
-        chunks.push(event.data);
-      };
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "video/webm" });
-        const url = URL.createObjectURL(blob);
-        const video = document.createElement("video");
-        video.src = url;
-        video.controls = true;
-        photoGallery.appendChild(video);
-      };
-      mediaRecorder.start();
-      recordButton.style.display = "none";
-      stopRecordingButton.style.display = "inline-block";
-    }
-
-    // Stop recording
-    function stopRecording() {
-      mediaRecorder.stop();
-      recordButton.style.display = "inline-block";
-      stopRecordingButton.style.display = "none";
-    }
-
-    // Upload media (simulated)
-    function uploadMedia() {
-      thankYouMessage.style.display = "block";
-      setTimeout(() => {
-        thankYouMessage.style.display = "none";
-      }, 3000);
-    }
-
-    // Volume control
-    volumeSlider.addEventListener("input", () => {
+    // Adjust volume
+    volumeSlider.addEventListener('input', () => {
+      backgroundMusic.volume = volumeSlider.value;
       volumeValue.textContent = `Volume: ${Math.round(volumeSlider.value * 100)}%`;
     });
 
-    // Play and pause music
-    playMusicButton.addEventListener("click", () => {
-      playMusicButton.style.display = "none";
-      pauseMusicButton.style.display = "inline-block";
+    // Initialize camera
+    async function initializeCamera() {
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: currentCamera },
+          audio: false,
+        });
+        camera.srcObject = mediaStream;
+      } catch (err) {
+        console.error('Error accessing camera: ', err);
+      }
+    }
+
+    // Switch camera between front and back
+    switchCameraButton.addEventListener('click', () => {
+      currentCamera = currentCamera === 'user' ? 'environment' : 'user';
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+      }
+      initializeCamera();
     });
 
-    pauseMusicButton.addEventListener("click", () => {
-      pauseMusicButton.style.display = "none";
-      playMusicButton.style.display = "inline-block";
+    // Capture photo
+    captureButton.addEventListener('click', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = camera.videoWidth;
+      canvas.height = camera.videoHeight;
+      const context = canvas.getContext('2d');
+      context.drawImage(camera, 0, 0, canvas.width, canvas.height);
+      const photoUrl = canvas.toDataURL('image/png');
+      
+      const imgElement = document.createElement('img');
+      imgElement.src = photoUrl;
+      imgElement.alt = 'Captured Photo';
+      
+      // Append the image to the gallery
+      const photoElement = document.createElement('div');
+      photoElement.classList.add('photo');
+      photoElement.appendChild(imgElement);
+      gallery.appendChild(photoElement);
+      
+      // Check if photo count exceeds 5
+      photoCount++;
+      if (photoCount > 5) {
+        alert('You can only capture up to 5 photos.');
+      }
     });
 
-    // Event listeners
-    captureButton.addEventListener("click", capturePhoto);
-    recordButton.addEventListener("click", startRecording);
-    stopRecordingButton.addEventListener("click", stopRecording);
-    switchCameraButton.addEventListener("click", switchCamera);
-    uploadButton.addEventListener("click", uploadMedia);
+    // Start video recording
+    recordButton.addEventListener('click', () => {
+      mediaRecorder = new MediaRecorder(mediaStream);
+      mediaRecorder.ondataavailable = event => chunks.push(event.data);
+      mediaRecorder.onstop = () => {
+        const videoBlob = new Blob(chunks, { type: 'video/webm' });
+        const videoUrl = URL.createObjectURL(videoBlob);
+        const videoElement = document.createElement('video');
+        videoElement.src = videoUrl;
+        videoElement.controls = true;
+        gallery.appendChild(videoElement);
+        
+        chunks = []; // Clear the chunks array
+        videoCount++;
+        if (videoCount > 3) {
+          alert('You can only record up to 3 videos.');
+        }
+      };
+      mediaRecorder.start();
+      recordButton.style.display = 'none';
+      stopButton.style.display = 'inline-block';
+    });
 
-    // Initialize
-    startMedia();
+    // Stop video recording
+    stopButton.addEventListener('click', () => {
+      mediaRecorder.stop();
+      recordButton.style.display = 'inline-block';
+      stopButton.style.display = 'none';
+    });
+
+    // Upload photos and videos
+    uploadButton.addEventListener('click', () => {
+      thankYouMessage.style.display = 'block';
+      gallery.innerHTML = ''; // Clear gallery after upload
+    });
+
+    // Initialize camera on page load
+    initializeCamera();
   </script>
 </body>
 </html>
