@@ -92,23 +92,19 @@
       permanentGallery.innerHTML = ''; // Clear the gallery
 
       // Load photos
-      permanentPhotos.forEach((photoUrl, index) => {
+      permanentPhotos.forEach(photoUrl => {
         const photoItem = document.createElement('div');
         photoItem.className = 'photo-item';
 
         const imgElement = document.createElement('img');
         imgElement.src = photoUrl;
-        imgElement.alt = `Captured Photo ${index + 1}`;
+        imgElement.alt = 'Captured Photo';
 
         const downloadLink = document.createElement('a');
         downloadLink.href = photoUrl;
-        downloadLink.download = `photo${index + 1}.png`; // Dynamically set the filename
+        downloadLink.download = 'photo.png'; // You can dynamically set the filename if needed
         downloadLink.className = 'download-link';
         downloadLink.textContent = 'Download';
-        downloadLink.addEventListener('click', (e) => {
-          e.preventDefault();
-          downloadFile(photoUrl, `photo${index + 1}.png`);
-        });
 
         photoItem.appendChild(imgElement);
         photoItem.appendChild(downloadLink);
@@ -116,7 +112,7 @@
       });
 
       // Load videos
-      permanentVideos.forEach((videoUrl, index) => {
+      permanentVideos.forEach(videoUrl => {
         const videoItem = document.createElement('div');
         videoItem.className = 'photo-item';
 
@@ -126,37 +122,14 @@
 
         const downloadLink = document.createElement('a');
         downloadLink.href = videoUrl;
-        downloadLink.download = `video${index + 1}.webm`; // Dynamically set the filename
+        downloadLink.download = 'video.webm'; // You can dynamically set the filename if needed
         downloadLink.className = 'download-link';
         downloadLink.textContent = 'Download';
-        downloadLink.addEventListener('click', (e) => {
-          e.preventDefault();
-          downloadFile(videoUrl, `video${index + 1}.webm`);
-        });
 
         videoItem.appendChild(videoElement);
         videoItem.appendChild(downloadLink);
         permanentGallery.appendChild(videoItem);
       });
-    }
-
-    // Function to download a file from a URL
-    function downloadFile(url, filename) {
-      fetch(url)
-        .then(response => response.blob())
-        .then(blob => {
-          const a = document.createElement('a');
-          const blobUrl = window.URL.createObjectURL(blob);
-          a.href = blobUrl;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(blobUrl);
-          }, 0);
-        })
-        .catch(console.error);
     }
   </script>
 </body>
