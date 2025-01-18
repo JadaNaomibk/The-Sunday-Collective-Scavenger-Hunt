@@ -298,6 +298,8 @@
     const volumeSlider = document.getElementById('volume-slider');
     const volumeValue = document.getElementById('volume-value');
 
+    let musicWasPlaying = false; // Flag to track if the music was playing
+
     // Load saved username
     document.addEventListener('DOMContentLoaded', () => {
       const savedName = localStorage.getItem('playerName');
@@ -438,18 +440,24 @@
           miniGallery.appendChild(videoItem);
 
           console.log('Recording stopped and saved.');
+
+          // Resume background music if it was playing before recording
+          if (musicWasPlaying) {
+            backgroundMusic.play();
+          }
         };
 
         // Start recording
         mediaRecorder.start();
         console.log('Recording started.');
 
-        // Automatically stop recording after 5 minutes
-        setTimeout(() => {
-          if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            mediaRecorder.stop();
-          }
-        }, 300000); // 5 minutes in milliseconds
+        // Pause background music if it is playing
+        if (!backgroundMusic.paused) {
+          musicWasPlaying = true;
+          backgroundMusic.pause();
+        } else {
+          musicWasPlaying = false;
+        }
 
         // Update button visibility
         recordButton.style.display = 'none';
