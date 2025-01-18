@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Sunday Collective Scavenger Hunt</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="css/fonts.css">
   <style>
     /* General Reset */
@@ -276,8 +276,26 @@
     Your browser does not support the audio element.
   </audio>
 
-  <!-- JavaScript to Enable Features -->
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
   <script>
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const storage = firebase.storage();
+    const db = firebase.firestore();
+
     let mediaStream;
     let mediaRecorder;
     let chunks = [];
@@ -300,25 +318,6 @@
 
     let musicWasPlaying = false; // Flag to track if the music was playing
 
-    // IndexedDB setup
-    let db;
-    const request = indexedDB.open('mediaDB', 1);
-
-    request.onupgradeneeded = function(event) {
-      db = event.target.result;
-      db.createObjectStore('photos', { keyPath: 'id', autoIncrement: true });
-      db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
-    };
-
-    request.onsuccess = function(event) {
-      db = event.target.result;
-      loadGallery();
-    };
-
-    request.onerror = function(event) {
-      console.error('IndexedDB error:', event.target.errorCode);
-    };
-
     // Load saved username
     document.addEventListener('DOMContentLoaded', () => {
       const savedName = localStorage.getItem('playerName');
@@ -328,6 +327,7 @@
       checkPermissions();
       initializeCamera();
       setupMusicControls();
+      loadGallery();
     });
 
     // Save username functionality
@@ -391,10 +391,10 @@
       canvas.height = camera.videoHeight;
       const context = canvas.getContext('2d');
       context.drawImage(camera, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(blob => {
+      canvas.toBlob(async (blob) => {
         if (blob) {
           const photoUrl = URL.createObjectURL(blob);
-          saveToIndexedDB('photos', blob, photoUrl);
+          await uploadFile(blob, 'photos');
 
           // Add photo to mini gallery
           const photoItem = document.createElement('div');
@@ -428,7 +428,7 @@
         mediaRecorder.onstop = async () => {
           const videoBlob = new Blob(chunks, { type: 'video/webm' });
           const videoUrl = URL.createObjectURL(videoBlob);
-          saveToIndexedDB('videos', videoBlob, videoUrl);
+          await uploadFile(videoBlob, 'videos');
 
           // Add video to mini gallery
           const videoItem = document.createElement('div');
@@ -487,13 +487,13 @@
 
     // Load saved images and videos into the mini gallery
     function loadGallery() {
-      loadFromIndexedDB('photos');
-      loadFromIndexedDB('videos');
+      loadFromFirestore('photos');
+      loadFromFirestore('videos');
     }
 
     // Function to clear the current session's uploads
     clearGalleryButton.addEventListener('click', () => {
-      clearIndexedDB();
+      clearFirestore();
       while (miniGallery.firstChild) {
         miniGallery.removeChild(miniGallery.firstChild);
       }
@@ -519,76 +519,56 @@
       });
     }
 
-    // Save media to IndexedDB
-    function saveToIndexedDB(storeName, blob, url) {
-      const transaction = db.transaction([storeName], 'readwrite');
-      const store = transaction.objectStore(storeName);
-      store.add({ blob, url });
-
-      transaction.oncomplete = function() {
-        console.log(`${storeName.slice(0, -1)} saved to IndexedDB.`);
-      };
-
-      transaction.onerror = function(event) {
-        console.error('IndexedDB error:', event.target.errorCode);
-      };
+    // Upload file to Firebase Storage and save URL to Firestore
+    async function uploadFile(file, type) {
+      const storageRef = storage.ref(`${type}/${Date.now()}_${file.name}`);
+      const snapshot = await storageRef.put(file);
+      const url = await snapshot.ref.getDownloadURL();
+      await db.collection(type).add({
+        url: url,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      console.log(`${type.slice(0, -1)} uploaded and URL saved to Firestore: ${url}`);
     }
 
-    // Load media from IndexedDB
-    function loadFromIndexedDB(storeName) {
-      const transaction = db.transaction([storeName], 'readonly');
-      const store = transaction.objectStore(storeName);
+    // Load media from Firestore
+    async function loadFromFirestore(type) {
+      const querySnapshot = await db.collection(type).orderBy('timestamp', 'desc').get();
+      querySnapshot.forEach((doc) => {
+        const item = doc.data();
+        const mediaItem = document.createElement('div');
+        mediaItem.className = 'photo-item';
 
-      store.openCursor().onsuccess = function(event) {
-        const cursor = event.target.result;
-        if (cursor) {
-          const item = cursor.value;
-          const mediaItem = document.createElement('div');
-          mediaItem.className = 'photo-item';
-
-          if (storeName === 'photos') {
-            const imgElement = document.createElement('img');
-            imgElement.src = item.url;
-            imgElement.alt = 'Saved Photo';
-            mediaItem.appendChild(imgElement);
-          } else if (storeName === 'videos') {
-            const videoElement = document.createElement('video');
-            videoElement.src = item.url;
-            videoElement.controls = true;
-            mediaItem.appendChild(videoElement);
-          }
-
-          miniGallery.appendChild(mediaItem);
-          cursor.continue();
+        if (type === 'photos') {
+          const imgElement = document.createElement('img');
+          imgElement.src = item.url;
+          imgElement.alt = 'Saved Photo';
+          mediaItem.appendChild(imgElement);
+        } else if (type === 'videos') {
+          const videoElement = document.createElement('video');
+          videoElement.src = item.url;
+          videoElement.controls = true;
+          mediaItem.appendChild(videoElement);
         }
-      };
+
+        miniGallery.appendChild(mediaItem);
+      });
     }
 
-        // Clear all data in IndexedDB
-        function clearIndexedDB() {
-      const photoTransaction = db.transaction(['photos'], 'readwrite');
-      const videoTransaction = db.transaction(['videos'], 'readwrite');
-      const photoStore = photoTransaction.objectStore('photos');
-      const videoStore = videoTransaction.objectStore('videos');
+    // Clear all data in Firestore
+    async function clearFirestore() {
+      const photosSnapshot = await db.collection('photos').get();
+      const videosSnapshot = await db.collection('videos').get();
 
-      photoStore.clear();
-      videoStore.clear();
+      photosSnapshot.forEach(async (doc) => {
+        await db.collection('photos').doc(doc.id).delete();
+      });
 
-      photoTransaction.oncomplete = function() {
-        console.log('Photos cleared from IndexedDB.');
-      };
+      videosSnapshot.forEach(async (doc) => {
+        await db.collection('videos').doc(doc.id).delete();
+      });
 
-      videoTransaction.oncomplete = function() {
-        console.log('Videos cleared from IndexedDB.');
-      };
-
-      photoTransaction.onerror = function(event) {
-        console.error('IndexedDB photo clear error:', event.target.errorCode);
-      };
-
-      videoTransaction.onerror = function(event) {
-        console.error('IndexedDB video clear error:', event.target.errorCode);
-      };
+      console.log('Firestore collections cleared.');
     }
   </script>
 </body>

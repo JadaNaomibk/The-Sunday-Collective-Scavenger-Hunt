@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gallery - The Sunday Collective Scavenger Hunt</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="css/fonts.css">
   <style>
     /* General Reset */
@@ -77,79 +77,76 @@
     <div id="permanentGallery" class="photo-gallery"></div>
   </div>
 
-  <!-- JavaScript to Load Permanent Gallery -->
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"></script>
   <script>
-    let db;
-    const request = indexedDB.open('mediaDB', 1);
-
-    request.onupgradeneeded = function(event) {
-      db = event.target.result;
-      db.createObjectStore('photos', { keyPath: 'id', autoIncrement: true });
-      db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAI5-3FFnDjfiplgegNk3jdHYACWNFbXYg",
+      authDomain: "scavhunt-2612e.firebaseapp.com",
+      projectId: "scavhunt-2612e",
+      storageBucket: "scavhunt-2612e.appspot.com",
+      messagingSenderId: "925984380551",
+      appId: "1:925984380551:web:16f6a4eeb9f75a004a8a22",
+      measurementId: "G-MBQ3XTG213"
     };
 
-    request.onsuccess = function(event) {
-      db = event.target.result;
-      loadPermanentGallery();
-    };
-
-    request.onerror = function(event) {
-      console.error('IndexedDB error:', event.target.errorCode);
-    };
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const analytics = firebase.analytics(app);
+    const db = firebase.firestore(app);
+    const storage = firebase.storage(app);
 
     // Function to load saved images into the permanent gallery
-    function loadPermanentGallery() {
+    async function loadPermanentGallery() {
       const permanentGallery = document.getElementById('permanentGallery');
 
-      loadFromIndexedDB('photos', permanentGallery);
-      loadFromIndexedDB('videos', permanentGallery);
+      const photos = await db.collection('photos').orderBy('timestamp', 'desc').get();
+      const videos = await db.collection('videos').orderBy('timestamp', 'desc').get();
+
+      photos.forEach((doc) => {
+        const photoUrl = doc.data().url;
+        const photoItem = document.createElement('div');
+        photoItem.className = 'photo-item';
+        const imgElement = document.createElement('img');
+        imgElement.src = photoUrl;
+        imgElement.alt = 'Saved Photo';
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = photoUrl;
+        downloadLink.download = `photo${doc.id}.png`;
+        downloadLink.className = 'download-link';
+        downloadLink.textContent = 'Download';
+
+        photoItem.appendChild(imgElement);
+        photoItem.appendChild(downloadLink);
+        permanentGallery.appendChild(photoItem);
+      });
+
+      videos.forEach((doc) => {
+        const videoUrl = doc.data().url;
+        const videoItem = document.createElement('div');
+        videoItem.className = 'photo-item';
+        const videoElement = document.createElement('video');
+        videoElement.src = videoUrl;
+        videoElement.controls = true;
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = videoUrl;
+        downloadLink.download = `video${doc.id}.webm`;
+        downloadLink.className = 'download-link';
+        downloadLink.textContent = 'Download';
+
+        videoItem.appendChild(videoElement);
+        videoItem.appendChild(downloadLink);
+        permanentGallery.appendChild(videoItem);
+      });
     }
 
-    // Load media from IndexedDB
-    function loadFromIndexedDB(storeName, galleryElement) {
-      const transaction = db.transaction([storeName], 'readonly');
-      const store = transaction.objectStore(storeName);
-
-      store.openCursor().onsuccess = function(event) {
-        const cursor = event.target.result;
-        if (cursor) {
-          const item = cursor.value;
-          const mediaItem = document.createElement('div');
-          mediaItem.className = 'photo-item';
-
-          if (storeName === 'photos') {
-            const imgElement = document.createElement('img');
-            imgElement.src = item.url;
-            imgElement.alt = 'Saved Photo';
-
-            const downloadLink = document.createElement('a');
-            downloadLink.href = item.url;
-            downloadLink.download = `photo${item.id}.png`;
-            downloadLink.className = 'download-link';
-            downloadLink.textContent = 'Download';
-
-            mediaItem.appendChild(imgElement);
-            mediaItem.appendChild(downloadLink);
-          } else if (storeName === 'videos') {
-            const videoElement = document.createElement('video');
-            videoElement.src = item.url;
-            videoElement.controls = true;
-
-            const downloadLink = document.createElement('a');
-            downloadLink.href = item.url;
-            downloadLink.download = `video${item.id}.webm`;
-            downloadLink.className = 'download-link';
-            downloadLink.textContent = 'Download';
-
-            mediaItem.appendChild(videoElement);
-            mediaItem.appendChild(downloadLink);
-          }
-
-          galleryElement.appendChild(mediaItem);
-          cursor.continue();
-        }
-      };
-    }
+    loadPermanentGallery();
   </script>
 </body>
 </html>
