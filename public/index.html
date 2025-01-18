@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Sunday Collective Scavenger Hunt</title>
+  <link rel="stylesheet" href="css/fonts.css">
+  <style>
+    /* General Reset */
+    body, h1, p, button, input, textarea, div {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'RainbowsansColor', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background-color: #f3eac3;
+    }
+
+    /* Welcome Section */
+    #welcome-section {
+      text-align: center;
+      padding: 20px;
+      background-color: #f3eac3;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    /* Photo Section */
+    #photo-section {
+      flex: 1;
+      padding: 16px;
+      background-color: #f3eac3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+      text-align: center;
+    }
+
+    #photo-section h1 {
+      font-size: 22px;
+      margin-bottom: 16px;
+      color: #000;
+    }
+
+    #photo-section input, button {
+      padding: 12px;
+      margin: 10px 0;
+      width: 90%;
+      max-width: 300px;
+      font-size: 14px;
+      border: 1px solid #000;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .photo-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 5px;
+      width: 100%;
+      padding: 10px 0;
+      justify-items: center;
+    }
+
+    .photo-item {
+      position: relative;
+      text-align: center;
+    }
+
+    .photo-item img, .photo-item video {
+      width: 100%;
+      max-width: 80px;
+      max-height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    /* Map Section */
+    #map-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f3eac3;
+      padding: 20px 0;
+      position: relative; /* Add this line for layering stickers */
+    }
+
+    #map-section img {
+      width: 100%;
+      max-width: 900px;
+      height: auto;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+
+    /* Instructions Section */
+    #instructions-section {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f3eac3;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative; /* Add this line for layering stickers */
+    }
+
+    #instructions-section img {
+      width: 100%;
+      height: auto;
+      max-width: 900px;
+      border-radius: 8px;
+    }
+
+    /* Stickers (Dancing Animation) */
+    .sticker {
+      position: absolute;
+      animation: dance 2s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    .sticker1 {
+      top: 10%;
+      left: 10%;
+      width: 50px;
+      height: 50px;
+      background-image: url('sticker1.png');
+      background-size: cover;
+    }
+
+    .sticker2 {
+      top: 15%;
+      left: 80%;
+      width: 50px;
+      height: 50px;
+      background-image: url('sticker2.png');
+      background-size: cover;
+    }
+
+    .sticker3 {
+      top: 60%;
+      left: 40%;
+      width: 50px;
+      height: 50px;
+      background-image: url('sticker3.png');
+      background-size: cover;
+    }
+
+    /* Dancing Animation Keyframes */
+    @keyframes dance {
+      0% {
+        transform: translateY(0);
+      }
+      100% {
+        transform: translateY(-20px);
+      }
+    }
+
+    /* Mobile Adjustments */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      #photo-section h1 {
+        font-size: 18px;
+      }
+
+      #photo-section input, button {
+        width: 100%;
+        max-width: none;
+      }
+
+      #map-section img, #instructions-section img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+      }
+
+      .photo-gallery img, .photo-gallery video {
+        max-width: 100px;
+        max-height: 100px;
+      }
+    }
+
+    /* Footer Section */
+    #footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #f3eac3;
+      font-size: 18px;
+    }
+
+    /* Background Music Controls */
+    #music-controls {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    #volume-slider {
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Welcome Section -->
+  <div id="welcome-section">
+    <h2>WELCOME TO THE SUNDAY COLLECTIVE SCAVENGER HUNT</h2>
+  </div>
+
+  <div id="photo-section">
+    <h1>The Sunday Collective Scavenger Hunt Game</h1>
+    <p>"Ready, set, go—grab your phone and start the show! A hunt awaits with clues to find, Capture the moments, follow the signs, The Sunday Collective’s waiting for you, Where adventure and fun are all brand new!"</p>
+    <input type="text" id="playerName" placeholder="Enter your name" />
+    <button id="saveUsername">Save Username</button>
+    <p id="usernameDisplay" style="margin-top: 10px;"></p>
+
+    <!-- Camera Preview -->
+    <video id="camera" autoplay playsinline></video>
+
+    <!-- Capture and Record Buttons -->
+    <button id="capture">Capture Photo</button>
+    <button id="record">Start Recording</button>
+    <button id="stop-recording" style="display: none;">Stop Recording</button>
+    <button id="switch-camera">Switch Camera</button>
+
+    <!-- Mini Gallery -->
+    <div id="miniGallery" class="photo-gallery"></div>
+
+    <!-- View Gallery Button -->
+    <button id="viewGallery">View Gallery</button>
+    <button id="clearGallery">Clear Gallery</button>
+  </div>
+
+  <!-- Instructions Section -->
+  <div id="instructions-section">
+    <img src="howto.png" alt="Scavenger Hunt Map">
+  </div>
+
+  <!-- Map Section -->
+  <div id="map-section">
+    <img src="TSC SCAVENGER HUNT MAP .png" alt="Instructions Image">
+    <!-- Dancing Stickers -->
+    <div class="sticker sticker1"></div>
+    <div class="sticker sticker2"></div>
+    <div class="sticker sticker3"></div>
+  </div>
+
+  <!-- Background Music Section -->
+  <div id="music-controls">
+    <button id="play-music">Play Music</button>
+    <button id="pause-music" style="display: none;">Pause Music</button>
+    <br>
+    <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+    <span id="volume-value">Volume: 50%</span>
+  </div>
+
+  <!-- Footer Section -->
+  <div id="footer">
+    <p>"Thank you so much for playing!"</p>
+  </div>
+
+  <!-- Background Music File (Insert the path to your MP3 file) -->
+  <audio id="background-music" loop>
+    <source src="Jungle Village  D&DTTRPG Music  1 Hour-[AudioTrimmer.com] copy.mp3" type="audio/mp3">
+    Your browser does not support the audio element.
+  </audio>
+
+  <!-- JavaScript to Enable Features -->
+  <script>
+    let mediaStream;
+    let mediaRecorder;
+    let chunks = [];
+    let currentCamera = "user"; // Default to front camera
+
+    const camera = document.getElementById('camera');
+    const captureButton = document.getElementById('capture');
+    const recordButton = document.getElementById('record');
+    const stopButton = document.getElementById('stop-recording');
+    const switchCameraButton = document.getElementById('switch-camera');
+    const usernameDisplay = document.getElementById('usernameDisplay');
+    const miniGallery = document.getElementById('miniGallery');
+    const clearGalleryButton = document.getElementById('clearGallery');
+
+    const backgroundMusic = document.getElementById('background-music');
+    const playMusicButton = document.getElementById('play-music');
+    const pauseMusicButton = document.getElementById('pause-music');
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeValue = document.getElementById('volume-value');
+
+    // Load saved username
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedName = localStorage.getItem('playerName');
+      if (savedName) {
+        usernameDisplay.textContent = `Hello, ${savedName}!`;
+      }
+      checkPermissions();
+      initializeCamera();
+      loadGallery();
+      setupMusicControls();
+    });
+
+    // Save username functionality
+    document.getElementById('saveUsername').addEventListener('click', () => {
+      const playerName = document.getElementById('playerName').value.trim();
+      if (playerName) {
+        localStorage.setItem('playerName', playerName); // Save to localStorage
+        usernameDisplay.textContent = `Hello, ${playerName}!`; // Display saved name
+      } else {
+        alert('Please enter your name.');
+      }
+    });
+
+    // Initialize camera and microphone
+    async function initializeCamera() {
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: currentCamera },
+          audio: true, // Include mic permissions
+        });
+        camera.srcObject = mediaStream;
+        console.log('Camera and microphone initialized successfully.');
+      } catch (err) {
+        console.error('Error accessing media devices:', err);
+        if (err.name === 'NotAllowedError') {
+          alert('Permission denied. Please enable camera and microphone access.');
+        } else {
+          alert('Error accessing camera/microphone. Check console for details.');
+        }
+      }
+    }
+
+    // Check permissions for camera and microphone
+    async function checkPermissions() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const hasVideoInput = devices.some(device => device.kind === 'videoinput');
+        const hasAudioInput = devices.some(device => device.kind === 'audioinput');
+
+        if (!hasVideoInput || !hasAudioInput) {
+          alert('Camera and microphone permissions are required. Please grant access in your browser settings.');
+        }
+      } catch (err) {
+        console.error('Error checking permissions:', err);
+      }
+    }
+
+    // Switch between front and back cameras
+    switchCameraButton.addEventListener('click', () => {
+      currentCamera = currentCamera === 'user' ? 'environment' : 'user'; // Toggle camera
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop()); // Stop existing stream
+      }
+      initializeCamera(); // Reinitialize with the new camera
+    });
+
+    // Capture photo
+    captureButton.addEventListener('click', async () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = camera.videoWidth;
+      canvas.height = camera.videoHeight;
+      const context = canvas.getContext('2d');
+      context.drawImage(camera, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => {
+        if (blob) {
+          const photoUrl = URL.createObjectURL(blob);
+
+          // Save photo to localStorage
+          const photos = JSON.parse(localStorage.getItem('photos') || '[]');
+          if (photos.length >= 20) {
+            alert('You can only capture up to 20 photos.');
+            return;
+          }
+          photos.push(photoUrl);
+          localStorage.setItem('photos', JSON.stringify(photos));
+
+          // Add photo to mini gallery
+          const photoItem = document.createElement('div');
+          photoItem.className = 'photo-item';
+
+          const imgElement = document.createElement('img');
+          imgElement.src = photoUrl;
+          imgElement.alt = 'Captured Photo';
+
+          photoItem.appendChild(imgElement);
+          miniGallery.appendChild(photoItem);
+        }
+      }, 'image/png');
+    });
+
+    // Start video recording
+    recordButton.addEventListener('click', () => {
+      if (mediaStream) {
+        // Initialize MediaRecorder
+        mediaRecorder = new MediaRecorder(mediaStream);
+        chunks = []; // Clear previous data
+
+        // Collect data when available
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            chunks.push(event.data);
+          }
+        };
+
+        // When recording stops, save the video
+        mediaRecorder.onstop = async () => {
+          const videoBlob = new Blob(chunks, { type: 'video/webm' });
+          const videoUrl = URL.createObjectURL(videoBlob);
+
+          // Save video to localStorage
+          const videos = JSON.parse(localStorage.getItem('videos') || '[]');
+          if (videos.length >= 5) {
+            alert('You can only capture up to 5 videos.');
+            return;
+          }
+          videos.push(videoUrl);
+          localStorage.setItem('videos', JSON.stringify(videos));
+
+          // Add video to mini gallery
+          const videoItem = document.createElement('div');
+          videoItem.className = 'photo-item';
+
+          const videoElement = document.createElement('video');
+          videoElement.src = videoUrl;
+          videoElement.controls = true;
+
+          videoItem.appendChild(videoElement);
+          miniGallery.appendChild(videoItem);
+
+          console.log('Recording stopped and saved.');
+        };
+
+        // Start recording
+        mediaRecorder.start();
+        console.log('Recording started.');
+
+        // Automatically stop recording after 5 minutes
+        setTimeout(() => {
+          if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+          }
+        }, 300000); // 5 minutes in milliseconds
+
+        // Update button visibility
+        recordButton.style.display = 'none';
+        stopButton.style.display = 'inline-block';
+      } else {
+        console.error('No media stream available for recording.');
+      }
+    });
+
+    // Stop video recording
+    stopButton.addEventListener('click', () => {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        console.log('Recording stopped.');
+
+        recordButton.style.display = 'inline-block';
+        stopButton.style.display = 'none';
+      }
+    });
+
+    // Handle View Gallery button click to prompt for passcode
+    document.getElementById('viewGallery').addEventListener('click', () => {
+      const passcode = prompt('Enter the passcode to view the gallery:');
+      if (passcode === 'jada') {
+        window.location.href = 'gallery.html';
+      } else {
+        alert('Incorrect passcode.');
+      }
+    });
+
+    // Load saved images and videos into the mini gallery
+    function loadGallery() {
+      const photos = JSON.parse(localStorage.getItem('photos') || '[]');
+      const videos = JSON.parse(localStorage.getItem('videos') || '[]');
+
+      miniGallery.innerHTML = ''; // Clear the gallery
+
+      photos.forEach(photoUrl => {
+        const photoItem = document.createElement('div');
+        photoItem.className = 'photo-item';
+
+        const imgElement = document.createElement('img');
+        imgElement.src = photoUrl;
+        imgElement.alt = 'Captured Photo';
+
+        photoItem.appendChild(imgElement);
+        miniGallery.appendChild(photoItem);
+      });
+
+      videos.forEach(videoUrl => {
+        const videoItem = document.createElement('div');
+        videoItem.className = 'photo-item';
+
+        const videoElement = document.createElement('video');
+        videoElement.src = videoUrl;
+        videoElement.controls = true;
+
+        videoItem.appendChild(videoElement);
+        miniGallery.appendChild(videoItem);
+      });
+    }
+
+    // Function to clear the current session's uploads
+    clearGalleryButton.addEventListener('click', () => {
+      localStorage.removeItem('photos');
+      localStorage.removeItem('videos');
+      while (miniGallery.firstChild) {
+        miniGallery.removeChild(miniGallery.firstChild);
+      }
+    });
+
+    // Set up background music controls
+    function setupMusicControls() {
+      playMusicButton.addEventListener('click', () => {
+        backgroundMusic.play();
+        playMusicButton.style.display = 'none';
+        pauseMusicButton.style.display = 'inline-block';
+      });
+
+      pauseMusicButton.addEventListener('click', () => {
+        backgroundMusic.pause();
+        playMusicButton.style.display = 'inline-block';
+        pauseMusicButton.style.display = 'none';
+      });
+
+      volumeSlider.addEventListener('input', () => {
+        backgroundMusic.volume = volumeSlider.value;
+        volumeValue.textContent = `Volume: ${Math.round(volumeSlider.value * 100)}%`;
+      });
+    }
+
+    // Periodically check for updates in the gallery
+    setInterval(() => {
+      loadGallery();
+    }, 5000); // Check every 5 seconds
+  </script>
+</body>
+</html>
