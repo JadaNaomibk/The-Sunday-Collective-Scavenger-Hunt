@@ -86,50 +86,55 @@
     // Function to load saved images into the permanent gallery
     function loadPermanentGallery() {
       const permanentGallery = document.getElementById('permanentGallery');
-      const permanentPhotos = JSON.parse(localStorage.getItem('permanentPhotos') || '[]');
-      const permanentVideos = JSON.parse(localStorage.getItem('videos') || '[]');
 
-      permanentGallery.innerHTML = ''; // Clear the gallery
+      fetch('/get-uploads')
+        .then(response => response.json())
+        .then(data => {
+          const { photos, videos } = data;
 
-      // Load photos
-      permanentPhotos.forEach(photoUrl => {
-        const photoItem = document.createElement('div');
-        photoItem.className = 'photo-item';
+          permanentGallery.innerHTML = ''; // Clear the gallery
 
-        const imgElement = document.createElement('img');
-        imgElement.src = photoUrl;
-        imgElement.alt = 'Captured Photo';
+          // Load photos
+          photos.forEach((photoUrl, index) => {
+            const photoItem = document.createElement('div');
+            photoItem.className = 'photo-item';
 
-        const downloadLink = document.createElement('a');
-        downloadLink.href = photoUrl;
-        downloadLink.download = 'photo.png'; // You can dynamically set the filename if needed
-        downloadLink.className = 'download-link';
-        downloadLink.textContent = 'Download';
+            const imgElement = document.createElement('img');
+            imgElement.src = photoUrl;
+            imgElement.alt = `Captured Photo ${index + 1}`;
 
-        photoItem.appendChild(imgElement);
-        photoItem.appendChild(downloadLink);
-        permanentGallery.appendChild(photoItem);
-      });
+            const downloadLink = document.createElement('a');
+            downloadLink.href = photoUrl;
+            downloadLink.download = `photo${index + 1}.png`; // Dynamically set the filename
+            downloadLink.className = 'download-link';
+            downloadLink.textContent = 'Download';
 
-      // Load videos
-      permanentVideos.forEach(videoUrl => {
-        const videoItem = document.createElement('div');
-        videoItem.className = 'photo-item';
+            photoItem.appendChild(imgElement);
+            photoItem.appendChild(downloadLink);
+            permanentGallery.appendChild(photoItem);
+          });
 
-        const videoElement = document.createElement('video');
-        videoElement.src = videoUrl;
-        videoElement.controls = true;
+          // Load videos
+          videos.forEach((videoUrl, index) => {
+            const videoItem = document.createElement('div');
+            videoItem.className = 'photo-item';
 
-        const downloadLink = document.createElement('a');
-        downloadLink.href = videoUrl;
-        downloadLink.download = 'video.webm'; // You can dynamically set the filename if needed
-        downloadLink.className = 'download-link';
-        downloadLink.textContent = 'Download';
+            const videoElement = document.createElement('video');
+            videoElement.src = videoUrl;
+            videoElement.controls = true;
 
-        videoItem.appendChild(videoElement);
-        videoItem.appendChild(downloadLink);
-        permanentGallery.appendChild(videoItem);
-      });
+            const downloadLink = document.createElement('a');
+            downloadLink.href = videoUrl;
+            downloadLink.download = `video${index + 1}.webm`; // Dynamically set the filename
+            downloadLink.className = 'download-link';
+            downloadLink.textContent = 'Download';
+
+            videoItem.appendChild(videoElement);
+            videoItem.appendChild(downloadLink);
+            permanentGallery.appendChild(videoItem);
+          });
+        })
+        .catch(console.error);
     }
   </script>
 </body>
