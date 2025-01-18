@@ -300,6 +300,25 @@
 
     let musicWasPlaying = false; // Flag to track if the music was playing
 
+    // IndexedDB setup
+    let db;
+    const request = indexedDB.open('mediaDB', 1);
+
+    request.onupgradeneeded = function(event) {
+      db = event.target.result;
+      db.createObjectStore('photos', { keyPath: 'id', autoIncrement: true });
+      db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
+    };
+
+    request.onsuccess = function(event) {
+      db = event.target.result;
+      loadGallery();
+    };
+
+    request.onerror = function(event) {
+      console.error('IndexedDB error:', event.target.errorCode);
+    };
+
     // Load saved username
     document.addEventListener('DOMContentLoaded', () => {
       const savedName = localStorage.getItem('playerName');
@@ -308,7 +327,6 @@
       }
       checkPermissions();
       initializeCamera();
-      loadGallery();
       setupMusicControls();
     });
 
@@ -375,34 +393,19 @@
       context.drawImage(camera, 0, 0, canvas.width, canvas.height);
       canvas.toBlob(blob => {
         if (blob) {
-          // Upload photo to server
-          const formData = new FormData();
-          formData.append('photo', blob, 'photo.png');
-          fetch('/upload/photo', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => response.json())
-          .then(data => {
-            const photoUrl = data.url;
+          const photoUrl = URL.createObjectURL(blob);
+          saveToIndexedDB('photos', blob, photoUrl);
 
-            // Save photo URL to localStorage
-            const photos = JSON.parse(localStorage.getItem('photos') || '[]');
-            photos.push(photoUrl);
-            localStorage.setItem('photos', JSON.stringify(photos));
+          // Add photo to mini gallery
+          const photoItem = document.createElement('div');
+          photoItem.className = 'photo-item';
 
-            // Add photo to mini gallery
-            const photoItem = document.createElement('div');
-            photoItem.className = 'photo-item';
+          const imgElement = document.createElement('img');
+          imgElement.src = photoUrl;
+          imgElement.alt = 'Captured Photo';
 
-            const imgElement = document.createElement('img');
-            imgElement.src = photoUrl;
-            imgElement.alt = 'Captured Photo';
-
-            photoItem.appendChild(imgElement);
-            miniGallery.appendChild(photoItem);
-          })
-          .catch(console.error);
+          photoItem.appendChild(imgElement);
+          miniGallery.appendChild(photoItem);
         }
       }, 'image/png');
     });
@@ -424,42 +427,26 @@
         // When recording stops, save the video
         mediaRecorder.onstop = async () => {
           const videoBlob = new Blob(chunks, { type: 'video/webm' });
+          const videoUrl = URL.createObjectURL(videoBlob);
+          saveToIndexedDB('videos', videoBlob, videoUrl);
 
-          // Upload video to server
-          const formData = new FormData();
-          formData.append('video', videoBlob, 'video.webm');
-          fetch('/upload/video', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => response.json())
-          .then(data => {
-            const videoUrl = data.url;
+          // Add video to mini gallery
+          const videoItem = document.createElement('div');
+          videoItem.className = 'photo-item';
 
-            // Save video URL to localStorage
-            const videos = JSON.parse(localStorage.getItem('videos') || '[]');
-            videos.push(videoUrl);
-            localStorage.setItem('videos', JSON.stringify(videos));
+          const videoElement = document.createElement('video');
+          videoElement.src = videoUrl;
+          videoElement.controls = true;
 
-            // Add video to mini gallery
-            const videoItem = document.createElement('div');
-            videoItem.className = 'photo-item';
+          videoItem.appendChild(videoElement);
+          miniGallery.appendChild(videoItem);
 
-            const videoElement = document.createElement('video');
-            videoElement.src = videoUrl;
-            videoElement.controls = true;
+          console.log('Recording stopped and saved.');
 
-            videoItem.appendChild(videoElement);
-            miniGallery.appendChild(videoItem);
-
-            console.log('Recording stopped and saved.');
-
-            // Resume background music if it was playing before recording
-            if (musicWasPlaying) {
-              backgroundMusic.play();
-            }
-          })
-          .catch(console.error);
+          // Resume background music if it was playing before recording
+          if (musicWasPlaying) {
+            backgroundMusic.play();
+          }
         };
 
         // Start recording
@@ -493,52 +480,20 @@
       }
     });
 
-    // Handle View Gallery button click to prompt for passcode
+    // Handle View Gallery button click
     document.getElementById('viewGallery').addEventListener('click', () => {
-      const passcode = prompt('Enter the passcode to view the gallery:');
-      if (passcode === 'jada') {
-        window.location.href = 'gallery.html';
-      } else {
-        alert('Incorrect passcode.');
-      }
+      window.location.href = 'gallery.html';
     });
 
     // Load saved images and videos into the mini gallery
     function loadGallery() {
-      const photos = JSON.parse(localStorage.getItem('photos') || '[]');
-      const videos = JSON.parse(localStorage.getItem('videos') || '[]');
-
-      miniGallery.innerHTML = ''; // Clear the gallery
-
-      photos.forEach(photoUrl => {
-        const photoItem = document.createElement('div');
-        photoItem.className = 'photo-item';
-
-        const imgElement = document.createElement('img');
-        imgElement.src = photoUrl;
-        imgElement.alt = 'Captured Photo';
-
-        photoItem.appendChild(imgElement);
-        miniGallery.appendChild(photoItem);
-      });
-
-      videos.forEach(videoUrl => {
-        const videoItem = document.createElement('div');
-        videoItem.className = 'photo-item';
-
-        const videoElement = document.createElement('video');
-        videoElement.src = videoUrl;
-        videoElement.controls = true;
-
-        videoItem.appendChild(videoElement);
-        miniGallery.appendChild(videoItem);
-      });
+      loadFromIndexedDB('photos');
+      loadFromIndexedDB('videos');
     }
 
     // Function to clear the current session's uploads
     clearGalleryButton.addEventListener('click', () => {
-      localStorage.removeItem('photos');
-      localStorage.removeItem('videos');
+      clearIndexedDB();
       while (miniGallery.firstChild) {
         miniGallery.removeChild(miniGallery.firstChild);
       }
@@ -564,10 +519,77 @@
       });
     }
 
-    // Periodically check for updates in the gallery
-    setInterval(() => {
-      loadGallery();
-    }, 5000); // Check every 5 seconds
+    // Save media to IndexedDB
+    function saveToIndexedDB(storeName, blob, url) {
+      const transaction = db.transaction([storeName], 'readwrite');
+      const store = transaction.objectStore(storeName);
+      store.add({ blob, url });
+
+      transaction.oncomplete = function() {
+        console.log(`${storeName.slice(0, -1)} saved to IndexedDB.`);
+      };
+
+      transaction.onerror = function(event) {
+        console.error('IndexedDB error:', event.target.errorCode);
+      };
+    }
+
+    // Load media from IndexedDB
+    function loadFromIndexedDB(storeName) {
+      const transaction = db.transaction([storeName], 'readonly');
+      const store = transaction.objectStore(storeName);
+
+      store.openCursor().onsuccess = function(event) {
+        const cursor = event.target.result;
+        if (cursor) {
+          const item = cursor.value;
+          const mediaItem = document.createElement('div');
+          mediaItem.className = 'photo-item';
+
+          if (storeName === 'photos') {
+            const imgElement = document.createElement('img');
+            imgElement.src = item.url;
+            imgElement.alt = 'Saved Photo';
+            mediaItem.appendChild(imgElement);
+          } else if (storeName === 'videos') {
+            const videoElement = document.createElement('video');
+            videoElement.src = item.url;
+            videoElement.controls = true;
+            mediaItem.appendChild(videoElement);
+          }
+
+          miniGallery.appendChild(mediaItem);
+          cursor.continue();
+        }
+      };
+    }
+
+        // Clear all data in IndexedDB
+        function clearIndexedDB() {
+      const photoTransaction = db.transaction(['photos'], 'readwrite');
+      const videoTransaction = db.transaction(['videos'], 'readwrite');
+      const photoStore = photoTransaction.objectStore('photos');
+      const videoStore = videoTransaction.objectStore('videos');
+
+      photoStore.clear();
+      videoStore.clear();
+
+      photoTransaction.oncomplete = function() {
+        console.log('Photos cleared from IndexedDB.');
+      };
+
+      videoTransaction.oncomplete = function() {
+        console.log('Videos cleared from IndexedDB.');
+      };
+
+      photoTransaction.onerror = function(event) {
+        console.error('IndexedDB photo clear error:', event.target.errorCode);
+      };
+
+      videoTransaction.onerror = function(event) {
+        console.error('IndexedDB video clear error:', event.target.errorCode);
+      };
+    }
   </script>
 </body>
 </html>

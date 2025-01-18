@@ -79,62 +79,76 @@
 
   <!-- JavaScript to Load Permanent Gallery -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    let db;
+    const request = indexedDB.open('mediaDB', 1);
+
+    request.onupgradeneeded = function(event) {
+      db = event.target.result;
+      db.createObjectStore('photos', { keyPath: 'id', autoIncrement: true });
+      db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
+    };
+
+    request.onsuccess = function(event) {
+      db = event.target.result;
       loadPermanentGallery();
-    });
+    };
+
+    request.onerror = function(event) {
+      console.error('IndexedDB error:', event.target.errorCode);
+    };
 
     // Function to load saved images into the permanent gallery
     function loadPermanentGallery() {
       const permanentGallery = document.getElementById('permanentGallery');
 
-      fetch('/get-uploads')
-        .then(response => response.json())
-        .then(data => {
-          const { photos, videos } = data;
+      loadFromIndexedDB('photos', permanentGallery);
+      loadFromIndexedDB('videos', permanentGallery);
+    }
 
-          permanentGallery.innerHTML = ''; // Clear the gallery
+    // Load media from IndexedDB
+    function loadFromIndexedDB(storeName, galleryElement) {
+      const transaction = db.transaction([storeName], 'readonly');
+      const store = transaction.objectStore(storeName);
 
-          // Load photos
-          photos.forEach((photoUrl, index) => {
-            const photoItem = document.createElement('div');
-            photoItem.className = 'photo-item';
+      store.openCursor().onsuccess = function(event) {
+        const cursor = event.target.result;
+        if (cursor) {
+          const item = cursor.value;
+          const mediaItem = document.createElement('div');
+          mediaItem.className = 'photo-item';
 
+          if (storeName === 'photos') {
             const imgElement = document.createElement('img');
-            imgElement.src = photoUrl;
-            imgElement.alt = `Captured Photo ${index + 1}`;
+            imgElement.src = item.url;
+            imgElement.alt = 'Saved Photo';
 
             const downloadLink = document.createElement('a');
-            downloadLink.href = photoUrl;
-            downloadLink.download = `photo${index + 1}.png`; // Dynamically set the filename
+            downloadLink.href = item.url;
+            downloadLink.download = `photo${item.id}.png`;
             downloadLink.className = 'download-link';
             downloadLink.textContent = 'Download';
 
-            photoItem.appendChild(imgElement);
-            photoItem.appendChild(downloadLink);
-            permanentGallery.appendChild(photoItem);
-          });
-
-          // Load videos
-          videos.forEach((videoUrl, index) => {
-            const videoItem = document.createElement('div');
-            videoItem.className = 'photo-item';
-
+            mediaItem.appendChild(imgElement);
+            mediaItem.appendChild(downloadLink);
+          } else if (storeName === 'videos') {
             const videoElement = document.createElement('video');
-            videoElement.src = videoUrl;
+            videoElement.src = item.url;
             videoElement.controls = true;
 
             const downloadLink = document.createElement('a');
-            downloadLink.href = videoUrl;
-            downloadLink.download = `video${index + 1}.webm`; // Dynamically set the filename
+            downloadLink.href = item.url;
+            downloadLink.download = `video${item.id}.webm`;
             downloadLink.className = 'download-link';
             downloadLink.textContent = 'Download';
 
-            videoItem.appendChild(videoElement);
-            videoItem.appendChild(downloadLink);
-            permanentGallery.appendChild(videoItem);
-          });
-        })
-        .catch(console.error);
+            mediaItem.appendChild(videoElement);
+            mediaItem.appendChild(downloadLink);
+          }
+
+          galleryElement.appendChild(mediaItem);
+          cursor.continue();
+        }
+      };
     }
   </script>
 </body>
