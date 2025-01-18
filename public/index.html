@@ -182,9 +182,14 @@
         height: auto;
       }
 
+      .photo-gallery {
+        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+        gap: 5px;
+      }
+
       .photo-gallery img, .photo-gallery video {
-        max-width: 100px;
-        max-height: 100px;
+        max-width: 60px;
+        max-height: 60px;
       }
     }
 
