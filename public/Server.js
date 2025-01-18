@@ -21,24 +21,35 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Ensure the uploads directory exists
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = 'uploads/';
-    fs.mkdir(uploadPath, { recursive: true }, (err) => {
-      if (err) {
-        console.error('Error creating upload directory:', err);
-        return cb(err);
-      }
-      cb(null, uploadPath);
-    });
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    const filename = `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`;
+    cb(null, filename);
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png|gif|mp4|mkv|avi/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error('File upload only supports the following filetypes - ' + filetypes));
+  },
+});
 
 // File upload endpoint
 app.post('/upload', upload.array('mediaFiles', 10), (req, res) => {
@@ -49,7 +60,7 @@ app.post('/upload', upload.array('mediaFiles', 10), (req, res) => {
     username,
   }));
 
-  const metadataPath = 'uploads/metadata.json';
+  const metadataPath = path.join(uploadDir, 'metadata.json');
   let metadata = [];
   if (fs.existsSync(metadataPath)) {
     try {
@@ -74,7 +85,7 @@ app.post('/upload', upload.array('mediaFiles', 10), (req, res) => {
 
 // List uploaded files
 app.get('/files', (req, res) => {
-  const metadataPath = 'uploads/metadata.json';
+  const metadataPath = path.join(uploadDir, 'metadata.json');
   if (fs.existsSync(metadataPath)) {
     try {
       const metadata = JSON.parse(fs.readFileSync(metadataPath));

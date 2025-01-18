@@ -3,63 +3,86 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Photo Gallery</title>
+  <title>Gallery - The Sunday Collective Scavenger Hunt</title>
+  <link rel="stylesheet" href="css/fonts.css">
   <style>
+    /* General Reset */
+    body, h1, div {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'RainbowsansColor', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background-color: #f3eac3;
+    }
+
+    /* Gallery Section */
+    #gallery-section {
+      flex: 1;
+      padding: 16px;
+      background-color: #f3eac3;
       display: flex;
       flex-direction: column;
       align-items: center;
-      background-color: #f3eac3;
-      padding: 20px;
+      overflow-y: auto;
+      text-align: center;
     }
-    h1 {
-      margin-bottom: 20px;
+
+    #gallery-section h1 {
+      font-size: 22px;
+      margin-bottom: 16px;
+      color: #000;
     }
+
     .photo-gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 5px;
       width: 100%;
-      max-width: 800px;
+      padding: 10px 0;
+      justify-items: center;
     }
+
     .photo-item {
       position: relative;
       text-align: center;
     }
-    .photo-item img, .photo-item video {
+
+    .photo-item img {
       width: 100%;
-      height: auto;
+      max-width: 80px;
+      max-height: 80px;
+      object-fit: cover;
       border-radius: 8px;
-    }
-    .download-button {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background-color: rgba(0, 0, 0, 0.5);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      text-align: center;
-      cursor: pointer;
-      text-decoration: none;
-      line-height: 24px;
     }
   </style>
 </head>
 <body>
-  <h1>Photo Gallery</h1>
-  <div class="photo-gallery" id="gallery"></div>
+  <!-- Gallery Section -->
+  <div id="gallery-section">
+    <h1>Permanent Gallery</h1>
+    <div id="permanentGallery" class="photo-gallery"></div>
+  </div>
 
+  <!-- JavaScript to Load Permanent Gallery -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const gallery = document.getElementById('gallery');
-      const photos = JSON.parse(localStorage.getItem('photos') || '[]');
-      const videos = JSON.parse(localStorage.getItem('videos') || '[]');
+      loadPermanentGallery();
+    });
 
-      photos.forEach(photoUrl => {
+    // Function to load saved images into the permanent gallery
+    function loadPermanentGallery() {
+      const permanentGallery = document.getElementById('permanentGallery');
+      const permanentPhotos = JSON.parse(localStorage.getItem('permanentPhotos') || '[]');
+
+      permanentGallery.innerHTML = ''; // Clear the gallery
+
+      permanentPhotos.forEach(photoUrl => {
         const photoItem = document.createElement('div');
         photoItem.className = 'photo-item';
 
@@ -67,36 +90,10 @@
         imgElement.src = photoUrl;
         imgElement.alt = 'Captured Photo';
 
-        const downloadButton = document.createElement('a');
-        downloadButton.href = photoUrl;
-        downloadButton.download = `Photo_${Date.now()}.png`;
-        downloadButton.className = 'download-button';
-        downloadButton.textContent = '↓';
-
         photoItem.appendChild(imgElement);
-        photoItem.appendChild(downloadButton);
-        gallery.appendChild(photoItem);
+        permanentGallery.appendChild(photoItem);
       });
-
-      videos.forEach(videoUrl => {
-        const videoItem = document.createElement('div');
-        videoItem.className = 'photo-item';
-
-        const videoElement = document.createElement('video');
-        videoElement.src = videoUrl;
-        videoElement.controls = true;
-
-        const downloadButton = document.createElement('a');
-        downloadButton.href = videoUrl;
-        downloadButton.download = `Video_${Date.now()}.webm`;
-        downloadButton.className = 'download-button';
-        downloadButton.textContent = '↓';
-
-        videoItem.appendChild(videoElement);
-        videoItem.appendChild(downloadButton);
-        gallery.appendChild(videoItem);
-      });
-    });
+    }
   </script>
 </body>
 </html>

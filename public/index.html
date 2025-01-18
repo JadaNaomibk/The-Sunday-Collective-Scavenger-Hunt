@@ -379,12 +379,13 @@
 
           // Save photo to localStorage
           const photos = JSON.parse(localStorage.getItem('photos') || '[]');
-          if (photos.length >= 20) {
-            alert('You can only capture up to 20 photos.');
-            return;
-          }
           photos.push(photoUrl);
           localStorage.setItem('photos', JSON.stringify(photos));
+
+          // Add photo to permanent gallery
+          const permanentPhotos = JSON.parse(localStorage.getItem('permanentPhotos') || '[]');
+          permanentPhotos.push(photoUrl);
+          localStorage.setItem('permanentPhotos', JSON.stringify(permanentPhotos));
 
           // Add photo to mini gallery
           const photoItem = document.createElement('div');
@@ -421,10 +422,6 @@
 
           // Save video to localStorage
           const videos = JSON.parse(localStorage.getItem('videos') || '[]');
-          if (videos.length >= 5) {
-            alert('You can only capture up to 5 videos.');
-            return;
-          }
           videos.push(videoUrl);
           localStorage.setItem('videos', JSON.stringify(videos));
 
