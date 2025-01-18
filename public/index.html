@@ -276,26 +276,7 @@
     Your browser does not support the audio element.
   </audio>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
   <script>
-    // Your Firebase configuration
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const storage = firebase.storage();
-    const db = firebase.firestore();
-
     let mediaStream;
     let mediaRecorder;
     let chunks = [];
@@ -393,8 +374,15 @@
       context.drawImage(camera, 0, 0, canvas.width, canvas.height);
       canvas.toBlob(async (blob) => {
         if (blob) {
-          const photoUrl = URL.createObjectURL(blob);
-          await uploadFile(blob, 'photos');
+          const formData = new FormData();
+          formData.append('photo', blob, 'photo.png');
+
+          const response = await fetch('/upload/photo', {
+            method: 'POST',
+            body: formData
+          });
+          const data = await response.json();
+          const photoUrl = data.url;
 
           // Add photo to mini gallery
           const photoItem = document.createElement('div');
@@ -413,22 +401,26 @@
     // Start video recording
     recordButton.addEventListener('click', () => {
       if (mediaStream) {
-        // Initialize MediaRecorder
         mediaRecorder = new MediaRecorder(mediaStream);
-        chunks = []; // Clear previous data
+        chunks = [];
 
-        // Collect data when available
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
             chunks.push(event.data);
           }
         };
 
-        // When recording stops, save the video
         mediaRecorder.onstop = async () => {
           const videoBlob = new Blob(chunks, { type: 'video/webm' });
-          const videoUrl = URL.createObjectURL(videoBlob);
-          await uploadFile(videoBlob, 'videos');
+          const formData = new FormData();
+          formData.append('video', videoBlob, 'video.webm');
+
+          const response = await fetch('/upload/video', {
+            method: 'POST',
+            body: formData
+          });
+          const data = await response.json();
+          const videoUrl = data.url;
 
           // Add video to mini gallery
           const videoItem = document.createElement('div');
@@ -441,19 +433,13 @@
           videoItem.appendChild(videoElement);
           miniGallery.appendChild(videoItem);
 
-          console.log('Recording stopped and saved.');
-
-          // Resume background music if it was playing before recording
           if (musicWasPlaying) {
             backgroundMusic.play();
           }
         };
 
-        // Start recording
         mediaRecorder.start();
-        console.log('Recording started.');
 
-        // Pause background music if it is playing
         if (!backgroundMusic.paused) {
           musicWasPlaying = true;
           backgroundMusic.pause();
@@ -461,42 +447,62 @@
           musicWasPlaying = false;
         }
 
-        // Update button visibility
         recordButton.style.display = 'none';
         stopButton.style.display = 'inline-block';
-      } else {
-        console.error('No media stream available for recording.');
       }
     });
 
-    // Stop video recording
     stopButton.addEventListener('click', () => {
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
-        console.log('Recording stopped.');
-
         recordButton.style.display = 'inline-block';
         stopButton.style.display = 'none';
       }
     });
 
-    // Handle View Gallery button click
-    document.getElementById('viewGallery').addEventListener('click', () => {
-      window.location.href = 'gallery.html';
-    });
-
     // Load saved images and videos into the mini gallery
     function loadGallery() {
-      loadFromFirestore('photos');
-      loadFromFirestore('videos');
+      fetch('/gallery/photos')
+        .then(response => response.json())
+        .then(data => {
+          data.photos.forEach(photoUrl => {
+            const photoItem = document.createElement('div');
+            photoItem.className = 'photo-item';
+
+            const imgElement = document.createElement('img');
+            imgElement.src = photoUrl;
+            imgElement.alt = 'Saved Photo';
+
+            photoItem.appendChild(imgElement);
+            miniGallery.appendChild(photoItem);
+          });
+        });
+
+      fetch('/gallery/videos')
+        .then(response => response.json())
+        .then(data => {
+          data.videos.forEach(videoUrl => {
+            const videoItem = document.createElement('div');
+            videoItem.className = 'photo-item';
+
+            const videoElement = document.createElement('video');
+            videoElement.src = videoUrl;
+            videoElement.controls = true;
+
+            videoItem.appendChild(videoElement);
+            miniGallery.appendChild(videoItem);
+          });
+        });
     }
 
-    // Function to clear the current session's uploads
+    // Clear gallery
     clearGalleryButton.addEventListener('click', () => {
-      clearFirestore();
-      while (miniGallery.firstChild) {
-        miniGallery.removeChild(miniGallery.firstChild);
-      }
+      fetch('/clear-gallery', { method: 'POST' })
+        .then(() => {
+          while (miniGallery.firstChild) {
+            miniGallery.removeChild(miniGallery.firstChild);
+          }
+        });
     });
 
     // Set up background music controls
@@ -517,58 +523,6 @@
         backgroundMusic.volume = volumeSlider.value;
         volumeValue.textContent = `Volume: ${Math.round(volumeSlider.value * 100)}%`;
       });
-    }
-
-    // Upload file to Firebase Storage and save URL to Firestore
-    async function uploadFile(file, type) {
-      const storageRef = storage.ref(`${type}/${Date.now()}_${file.name}`);
-      const snapshot = await storageRef.put(file);
-      const url = await snapshot.ref.getDownloadURL();
-      await db.collection(type).add({
-        url: url,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      console.log(`${type.slice(0, -1)} uploaded and URL saved to Firestore: ${url}`);
-    }
-
-    // Load media from Firestore
-    async function loadFromFirestore(type) {
-      const querySnapshot = await db.collection(type).orderBy('timestamp', 'desc').get();
-      querySnapshot.forEach((doc) => {
-        const item = doc.data();
-        const mediaItem = document.createElement('div');
-        mediaItem.className = 'photo-item';
-
-        if (type === 'photos') {
-          const imgElement = document.createElement('img');
-          imgElement.src = item.url;
-          imgElement.alt = 'Saved Photo';
-          mediaItem.appendChild(imgElement);
-        } else if (type === 'videos') {
-          const videoElement = document.createElement('video');
-          videoElement.src = item.url;
-          videoElement.controls = true;
-          mediaItem.appendChild(videoElement);
-        }
-
-        miniGallery.appendChild(mediaItem);
-      });
-    }
-
-    // Clear all data in Firestore
-    async function clearFirestore() {
-      const photosSnapshot = await db.collection('photos').get();
-      const videosSnapshot = await db.collection('videos').get();
-
-      photosSnapshot.forEach(async (doc) => {
-        await db.collection('photos').doc(doc.id).delete();
-      });
-
-      videosSnapshot.forEach(async (doc) => {
-        await db.collection('videos').doc(doc.id).delete();
-      });
-
-      console.log('Firestore collections cleared.');
     }
   </script>
 </body>
