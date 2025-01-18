@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Gallery</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #f3eac3;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    .photo-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 10px;
+      width: 100%;
+      max-width: 800px;
+    }
+    .photo-item {
+      position: relative;
+      text-align: center;
+    }
+    .photo-item img, .photo-item video {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    .download-button {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      text-align: center;
+      cursor: pointer;
+      text-decoration: none;
+      line-height: 24px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Photo Gallery</h1>
+  <div class="photo-gallery" id="gallery"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const gallery = document.getElementById('gallery');
+      const photos = JSON.parse(localStorage.getItem('photos') || '[]');
+      const videos = JSON.parse(localStorage.getItem('videos') || '[]');
+
+      photos.forEach(photoUrl => {
+        const photoItem = document.createElement('div');
+        photoItem.className = 'photo-item';
+
+        const imgElement = document.createElement('img');
+        imgElement.src = photoUrl;
+        imgElement.alt = 'Captured Photo';
+
+        const downloadButton = document.createElement('a');
+        downloadButton.href = photoUrl;
+        downloadButton.download = `Photo_${Date.now()}.png`;
+        downloadButton.className = 'download-button';
+        downloadButton.textContent = '↓';
+
+        photoItem.appendChild(imgElement);
+        photoItem.appendChild(downloadButton);
+        gallery.appendChild(photoItem);
+      });
+
+      videos.forEach(videoUrl => {
+        const videoItem = document.createElement('div');
+        videoItem.className = 'photo-item';
+
+        const videoElement = document.createElement('video');
+        videoElement.src = videoUrl;
+        videoElement.controls = true;
+
+        const downloadButton = document.createElement('a');
+        downloadButton.href = videoUrl;
+        downloadButton.download = `Video_${Date.now()}.webm`;
+        downloadButton.className = 'download-button';
+        downloadButton.textContent = '↓';
+
+        videoItem.appendChild(videoElement);
+        videoItem.appendChild(downloadButton);
+        gallery.appendChild(videoItem);
+      });
+    });
+  </script>
+</body>
+</html>

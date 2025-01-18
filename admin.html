@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Page</title>
+  <link rel="stylesheet" href="css/fonts.css">
+  <style>
+    /* General Reset */
+    body, h1, p, button, input, textarea, div {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'RainbowsansColor', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background-color: #f3eac3;
+    }
+
+    /* Admin Section */
+    #admin-section {
+      text-align: center;
+      padding: 20px;
+      background-color: #f3eac3;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    #admin-section h1 {
+      font-size: 22px;
+      margin-bottom: 16px;
+      color: #000;
+    }
+
+    #admin-section button {
+      padding: 12px;
+      margin: 10px 0;
+      width: 90%;
+      max-width: 300px;
+      font-size: 14px;
+      border: 1px solid #000;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Admin Section -->
+  <div id="admin-section">
+    <h1>Welcome, Admin!</h1>
+    <p>This page is only accessible to admin users.</p>
+    <form action="/logout" method="post">
+      <button type="submit">Logout</button>
+    </form>
+  </div>
+</body>
+</html>
