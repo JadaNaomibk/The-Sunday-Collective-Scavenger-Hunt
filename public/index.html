@@ -377,122 +377,26 @@
         if (blob) {
           const photoUrl = URL.createObjectURL(blob);
 
-           // Capture photo and upload to server
-    captureButton.addEventListener('click', async () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = camera.videoWidth;
-      canvas.height = camera.videoHeight;
-      const context = canvas.getContext('2d');
-      context.drawImage(camera, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(blob => {
-        if (blob) {
-          const formData = new FormData();
-          formData.append('photo', blob, 'photo.png');
-          fetch('/upload/photo', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => response.json())
-          .then(data => {
-            const photoUrl = data.url;
-            const photos = JSON.parse(localStorage.getItem('photos') || '[]');
-            photos.push(photoUrl);
-            localStorage.setItem('photos', JSON.stringify(photos));
-            const photoItem = document.createElement('div');
-            photoItem.className = 'photo-item';
-            const imgElement = document.createElement('img');
-            imgElement.src = photoUrl;
-            imgElement.alt = 'Captured Photo';
-            photoItem.appendChild(imgElement);
-            miniGallery.appendChild(photoItem);
-          })
-          .catch(console.error);
-        }
-      }, 'image/png');
-    });
+          // Save photo to localStorage
+          const photos = JSON.parse(localStorage.getItem('photos') || '[]');
+          photos.push(photoUrl);
+          localStorage.setItem('photos', JSON.stringify(photos));
 
-    // Start video recording and upload to server
-    recordButton.addEventListener('click', () => {
-      if (mediaStream) {
-        mediaRecorder = new MediaRecorder(mediaStream);
-        chunks = [];
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            chunks.push(event.data);
-          }
-        };
-        mediaRecorder.onstop = async () => {
-          const videoBlob = new Blob(chunks, { type: 'video/webm' });
-          const formData = new FormData();
-          formData.append('video', videoBlob, 'video.webm');
-          fetch('/upload/video', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => response.json())
-          .then(data => {
-            const videoUrl = data.url;
-            const videos = JSON.parse(localStorage.getItem('videos') || '[]');
-            videos.push(videoUrl);
-            localStorage.setItem('videos', JSON.stringify(videos));
-            const videoItem = document.createElement('div');
-            videoItem.className = 'photo-item';
-            const videoElement = document.createElement('video');
-            videoElement.src = videoUrl;
-            videoElement.controls = true;
-            videoItem.appendChild(videoElement);
-            miniGallery.appendChild(videoItem);
-          })
-          .catch(console.error);
-        };
-        mediaRecorder.start();
-        if (!backgroundMusic.paused) {
-          musicWasPlaying = true;
-          backgroundMusic.pause();
-        } else {
-          musicWasPlaying = false;
-        }
-        recordButton.style.display = 'none';
-        stopButton.style.display = 'inline-block';
-      }
-    });
+          // Add photo to permanent gallery
+          const permanentPhotos = JSON.parse(localStorage.getItem('permanentPhotos') || '[]');
+          permanentPhotos.push(photoUrl);
+          localStorage.setItem('permanentPhotos', JSON.stringify(permanentPhotos));
 
-    stopButton.addEventListener('click', () => {
-      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-        recordButton.style.display = 'inline-block';
-        stopButton.style.display = 'none';
-      }
-    });
+          // Add photo to mini gallery
+          const photoItem = document.createElement('div');
+          photoItem.className = 'photo-item';
 
-          // Upload photo to server
-          const formData = new FormData();
-          formData.append('photo', blob, 'photo.png');
-          fetch('/upload/photo', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => response.json())
-          .then(data => {
-            const photoUrl = data.url;
+          const imgElement = document.createElement('img');
+          imgElement.src = photoUrl;
+          imgElement.alt = 'Captured Photo';
 
-            // Save photo URL to localStorage
-            const photos = JSON.parse(localStorage.getItem('photos') || '[]');
-            photos.push(photoUrl);
-            localStorage.setItem('photos', JSON.stringify(photos));
-
-            // Add photo to mini gallery
-            const photoItem = document.createElement('div');
-            photoItem.className = 'photo-item';
-
-            const imgElement = document.createElement('img');
-            imgElement.src = photoUrl;
-            imgElement.alt = 'Captured Photo';
-
-            photoItem.appendChild(imgElement);
-            miniGallery.appendChild(photoItem);
-          })
-          .catch(console.error);
+          photoItem.appendChild(imgElement);
+          miniGallery.appendChild(photoItem);
         }
       }, 'image/png');
     });
@@ -516,41 +420,28 @@
           const videoBlob = new Blob(chunks, { type: 'video/webm' });
           const videoUrl = URL.createObjectURL(videoBlob);
 
-          // Upload video to server
-          const formData = new FormData();
-          formData.append('video', videoBlob, 'video.webm');
-          fetch('/upload/video', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => response.json())
-          .then(data => {
-            const videoUrl = data.url;
+          // Save video to localStorage
+          const videos = JSON.parse(localStorage.getItem('videos') || '[]');
+          videos.push(videoUrl);
+          localStorage.setItem('videos', JSON.stringify(videos));
 
-            // Save video URL to localStorage
-            const videos = JSON.parse(localStorage.getItem('videos') || '[]');
-            videos.push(videoUrl);
-            localStorage.setItem('videos', JSON.stringify(videos));
+          // Add video to mini gallery
+          const videoItem = document.createElement('div');
+          videoItem.className = 'photo-item';
 
-            // Add video to mini gallery
-            const videoItem = document.createElement('div');
-            videoItem.className = 'photo-item';
+          const videoElement = document.createElement('video');
+          videoElement.src = videoUrl;
+          videoElement.controls = true;
 
-            const videoElement = document.createElement('video');
-            videoElement.src = videoUrl;
-            videoElement.controls = true;
+          videoItem.appendChild(videoElement);
+          miniGallery.appendChild(videoItem);
 
-            videoItem.appendChild(videoElement);
-            miniGallery.appendChild(videoItem);
+          console.log('Recording stopped and saved.');
 
-            console.log('Recording stopped and saved.');
-
-            // Resume background music if it was playing before recording
-            if (musicWasPlaying) {
-              backgroundMusic.play();
-            }
-          })
-          .catch(console.error);
+          // Resume background music if it was playing before recording
+          if (musicWasPlaying) {
+            backgroundMusic.play();
+          }
         };
 
         // Start recording
