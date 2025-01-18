@@ -272,7 +272,7 @@
 
   <!-- Background Music File (Insert the path to your MP3 file) -->
   <audio id="background-music" loop>
-    <source src="Jungle Village  D&DTTRPG Music  1 Hour-[AudioTrimmer.com] copy.mp3" type="audio/mp3">
+    <source src="Jungle Village.mp3" type="audio/mp3">
     Your browser does not support the audio element.
   </audio>
 
@@ -375,28 +375,34 @@
       context.drawImage(camera, 0, 0, canvas.width, canvas.height);
       canvas.toBlob(blob => {
         if (blob) {
-          const photoUrl = URL.createObjectURL(blob);
+          // Upload photo to server
+          const formData = new FormData();
+          formData.append('photo', blob, 'photo.png');
+          fetch('/upload/photo', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            const photoUrl = data.url;
 
-          // Save photo to localStorage
-          const photos = JSON.parse(localStorage.getItem('photos') || '[]');
-          photos.push(photoUrl);
-          localStorage.setItem('photos', JSON.stringify(photos));
+            // Save photo URL to localStorage
+            const photos = JSON.parse(localStorage.getItem('photos') || '[]');
+            photos.push(photoUrl);
+            localStorage.setItem('photos', JSON.stringify(photos));
 
-          // Add photo to permanent gallery
-          const permanentPhotos = JSON.parse(localStorage.getItem('permanentPhotos') || '[]');
-          permanentPhotos.push(photoUrl);
-          localStorage.setItem('permanentPhotos', JSON.stringify(permanentPhotos));
+            // Add photo to mini gallery
+            const photoItem = document.createElement('div');
+            photoItem.className = 'photo-item';
 
-          // Add photo to mini gallery
-          const photoItem = document.createElement('div');
-          photoItem.className = 'photo-item';
+            const imgElement = document.createElement('img');
+            imgElement.src = photoUrl;
+            imgElement.alt = 'Captured Photo';
 
-          const imgElement = document.createElement('img');
-          imgElement.src = photoUrl;
-          imgElement.alt = 'Captured Photo';
-
-          photoItem.appendChild(imgElement);
-          miniGallery.appendChild(photoItem);
+            photoItem.appendChild(imgElement);
+            miniGallery.appendChild(photoItem);
+          })
+          .catch(console.error);
         }
       }, 'image/png');
     });
@@ -418,30 +424,42 @@
         // When recording stops, save the video
         mediaRecorder.onstop = async () => {
           const videoBlob = new Blob(chunks, { type: 'video/webm' });
-          const videoUrl = URL.createObjectURL(videoBlob);
 
-          // Save video to localStorage
-          const videos = JSON.parse(localStorage.getItem('videos') || '[]');
-          videos.push(videoUrl);
-          localStorage.setItem('videos', JSON.stringify(videos));
+          // Upload video to server
+          const formData = new FormData();
+          formData.append('video', videoBlob, 'video.webm');
+          fetch('/upload/video', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            const videoUrl = data.url;
 
-          // Add video to mini gallery
-          const videoItem = document.createElement('div');
-          videoItem.className = 'photo-item';
+            // Save video URL to localStorage
+            const videos = JSON.parse(localStorage.getItem('videos') || '[]');
+            videos.push(videoUrl);
+            localStorage.setItem('videos', JSON.stringify(videos));
 
-          const videoElement = document.createElement('video');
-          videoElement.src = videoUrl;
-          videoElement.controls = true;
+            // Add video to mini gallery
+            const videoItem = document.createElement('div');
+            videoItem.className = 'photo-item';
 
-          videoItem.appendChild(videoElement);
-          miniGallery.appendChild(videoItem);
+            const videoElement = document.createElement('video');
+            videoElement.src = videoUrl;
+            videoElement.controls = true;
 
-          console.log('Recording stopped and saved.');
+            videoItem.appendChild(videoElement);
+            miniGallery.appendChild(videoItem);
 
-          // Resume background music if it was playing before recording
-          if (musicWasPlaying) {
-            backgroundMusic.play();
-          }
+            console.log('Recording stopped and saved.');
+
+            // Resume background music if it was playing before recording
+            if (musicWasPlaying) {
+              backgroundMusic.play();
+            }
+          })
+          .catch(console.error);
         };
 
         // Start recording
